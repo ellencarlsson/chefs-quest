@@ -166,6 +166,15 @@
         <option value="hard">Hard</option>
       </select>
 
+      <label>Category</label>
+      <select id="category">
+        <option value="">— None —</option>
+        <option value="breakfast">Frukost</option>
+        <option value="lunch">Lunch</option>
+        <option value="dinner">Middag</option>
+        <option value="snack">Mellanmål</option>
+      </select>
+
       <label>XP Reward</label>
       <input id="xp_reward" type="number" value="100" min="0" />
 
@@ -288,6 +297,7 @@
         title:       document.getElementById('title').value.trim(),
         description: document.getElementById('description').value.trim(),
         difficulty:  document.getElementById('difficulty').value,
+        category:    document.getElementById('category').value || null,
         xp_reward:   Number(document.getElementById('xp_reward').value),
         is_locked:   false,
         ingredients: getIngredients(),
@@ -322,6 +332,7 @@
         document.getElementById(id).value = id === 'xp_reward' ? '100' : '';
       });
       document.getElementById('difficulty').value = 'medium';
+      document.getElementById('category').value = '';
       document.getElementById('ingredients').innerHTML = '';
       document.getElementById('steps').innerHTML = '';
     }

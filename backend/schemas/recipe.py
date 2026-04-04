@@ -26,6 +26,7 @@ class RecipeBase(BaseModel):
     difficulty: str
     xp_reward: int = 0
     is_locked: bool = True
+    category: str | None = None
 
 
 class IngredientCreate(BaseModel):
@@ -50,6 +51,7 @@ class RecipeUpdate(BaseModel):
     difficulty: str | None = None
     xp_reward: int | None = None
     is_locked: bool | None = None
+    category: str | None = None
 
 
 class RecipeResponse(RecipeBase):
