@@ -73,6 +73,22 @@
     .btn-sm:hover { background: #e0e0e0; }
     .btn-danger { background: #fee2e2; color: #b91c1c; }
     .btn-danger:hover { background: #fecaca; }
+    .btn-tiktok { background: #010101; color: #fff; }
+    .btn-tiktok:hover { background: #333; }
+
+    .import-section {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .import-section input { flex: 1; }
+
+    #import-status {
+      font-size: .8rem;
+      min-height: 1.2em;
+      margin-top: .3rem;
+    }
 
     #add-ingredient-btn, #add-step-btn {
       margin-top: .5rem;
@@ -131,6 +147,12 @@
     <div class="card">
       <h2>Add Recipe</h2>
 
+      <div class="import-section">
+        <input id="tiktok-url" type="url" placeholder="Paste TikTok URL to import recipe..." />
+        <button class="btn btn-tiktok" id="import-btn" type="button">Import</button>
+      </div>
+      <div id="import-status"></div>
+
       <label>Title</label>
       <input id="title" type="text" placeholder="Pasta Carbonara" />
 
@@ -170,6 +192,41 @@
 
   <script>
     const API = '';
+
+    // --- TikTok import ---
+    document.getElementById('import-btn').addEventListener('click', async () => {
+      const url = document.getElementById('tiktok-url').value.trim();
+      if (!url) return;
+      const importStatus = document.getElementById('import-status');
+      importStatus.textContent = 'Importing...';
+      importStatus.className = '';
+      document.getElementById('import-btn').disabled = true;
+      try {
+        const res = await fetch(`${API}/admin/import-tiktok`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail ?? 'Import failed');
+        }
+        const data = await res.json();
+        if (data.title) document.getElementById('title').value = data.title;
+        document.getElementById('ingredients').innerHTML = '';
+        (data.ingredients ?? []).forEach(i => addIngredientRow(i.name ?? '', i.amount ?? '', i.unit ?? ''));
+        document.getElementById('steps').innerHTML = '';
+        (data.steps ?? []).sort((a, b) => a.step_number - b.step_number).forEach(s => addStepRow(s.instruction ?? ''));
+        document.getElementById('tiktok-url').value = '';
+        importStatus.textContent = 'Recipe imported — review and save.';
+        importStatus.className = 'ok';
+      } catch (e) {
+        importStatus.textContent = `Error: ${e.message}`;
+        importStatus.className = 'err';
+      } finally {
+        document.getElementById('import-btn').disabled = false;
+      }
+    });
 
     // --- Ingredients ---
     document.getElementById('add-ingredient-btn').addEventListener('click', addIngredientRow);
