@@ -259,10 +259,11 @@
       const num = container.children.length + 1;
       const row = document.createElement('div');
       row.className = 'row';
+      row.style.alignItems = 'flex-start';
       row.innerHTML = `
-        <span style="font-size:.8rem;color:#888;min-width:1.5rem">${num}.</span>
-        <input type="text" placeholder="Step instruction" value="${instruction}" data-field="instruction" />
-        <button class="btn btn-sm" onclick="this.parentElement.remove();reorderSteps()">✕</button>
+        <span style="font-size:.8rem;color:#888;min-width:1.5rem;padding-top:.5rem">${num}.</span>
+        <textarea placeholder="Step instruction" data-field="instruction" rows="2" style="resize:vertical">${instruction}</textarea>
+        <button class="btn btn-sm" style="margin-top:.2rem" onclick="this.parentElement.remove();reorderSteps()">✕</button>
       `;
       container.appendChild(row);
     }

@@ -16,7 +16,7 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
 {
   "title": "Recipe name",
   "ingredients": [
-    {"name": "ingredient name", "amount": "quantity or null", "unit": "unit or null"}
+    {"name": "ingredient name", "amount": "numeric quantity only", "unit": "unit only"}
   ],
   "steps": [
     {"step_number": 1, "instruction": "step description"}
@@ -24,7 +24,12 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
 }
 
 Rules:
-- Use null (not empty string) when amount or unit is unknown
+- Translate everything to English (title, ingredient names, step instructions)
+- "amount" must be ONLY the number (e.g. "2", "1.5", "½"). Never include the unit in amount.
+- "unit" must be ONLY the unit word (e.g. "kg", "tbsp", "dl"). Never include the number in unit.
+- Example: "2 kg potatis" → name="potato", amount="2", unit="kg"
+- Example: "3 msk smör" → name="butter", amount="3", unit="tbsp"
+- Use null (not empty string) when amount or unit is truly unknown
 - Steps must be in order
 - If multiple sub-recipes exist, combine all ingredients and steps into one list
 
