@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../models/recipe.dart';
+import 'recipe_image.dart';
 
 class UnlockBottomSheet extends StatelessWidget {
   final Recipe recipe;
@@ -9,43 +10,60 @@ class UnlockBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = recipe.imageUrl != null;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.muted.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
+          if (hasImage)
+            RecipeImage(
+              imageUrl: recipe.imageUrl,
+              height: 180,
+              fit: BoxFit.cover,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-          ),
-          const SizedBox(height: 20),
-          const Text('🔒', style: TextStyle(fontSize: 52)),
-          const SizedBox(height: 16),
-          Text(recipe.title, style: AppTextStyles.headingDark(22), textAlign: TextAlign.center),
-          const SizedBox(height: 8),
-          Text(
-            'Laga detta recept IRL för att låsa upp det.',
-            style: AppTextStyles.body(14, color: AppColors.muted),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          _XpPill(xp: recipe.xpReward),
-          const SizedBox(height: 24),
-          _UnlockButton(recipe: recipe),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Inte nu',
-              style: AppTextStyles.body(14, color: AppColors.muted),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.muted.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (!hasImage) ...[
+                  const Text('🔒', style: TextStyle(fontSize: 52)),
+                  const SizedBox(height: 16),
+                ],
+                Text(recipe.title, style: AppTextStyles.headingDark(22), textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Text(
+                  'Laga detta recept IRL för att låsa upp det.',
+                  style: AppTextStyles.body(14, color: AppColors.muted),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                _XpPill(xp: recipe.xpReward),
+                const SizedBox(height: 24),
+                _UnlockButton(recipe: recipe),
+                const SizedBox(height: 10),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Inte nu',
+                    style: AppTextStyles.body(14, color: AppColors.muted),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -72,15 +90,9 @@ class _XpPill extends StatelessWidget {
         children: [
           const Text('⭐', style: TextStyle(fontSize: 16)),
           const SizedBox(width: 6),
-          Text(
-            '$xp XP',
-            style: AppTextStyles.label(14, color: AppColors.gold),
-          ),
+          Text('$xp XP', style: AppTextStyles.label(14, color: AppColors.gold)),
           const SizedBox(width: 4),
-          Text(
-            '· Belöning',
-            style: AppTextStyles.body(13, color: AppColors.gold),
-          ),
+          Text('· Belöning', style: AppTextStyles.body(13, color: AppColors.gold)),
         ],
       ),
     );

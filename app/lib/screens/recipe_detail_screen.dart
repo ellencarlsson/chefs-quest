@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
+import '../app_theme.dart';
+import '../widgets/recipe_image.dart';
 
 class RecipeDetailScreen extends StatelessWidget {
   final Recipe recipe;
@@ -9,35 +11,66 @@ class RecipeDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(recipe.title),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _DifficultyBadge(difficulty: recipe.difficulty),
-            const SizedBox(height: 8),
-            Text('${recipe.xpReward} XP',
-                style: Theme.of(context).textTheme.labelLarge),
-            if (recipe.description != null && recipe.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(recipe.description!,
-                    style: Theme.of(context).textTheme.bodyMedium),
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: recipe.imageUrl != null ? 240 : 120,
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                recipe.title,
+                style: AppTextStyles.heading(16),
               ),
-            const SizedBox(height: 24),
-            _SectionHeader(title: 'Ingredients (${recipe.ingredients.length})'),
-            const SizedBox(height: 8),
-            ...recipe.ingredients.map((i) => _IngredientRow(ingredient: i)),
-            const SizedBox(height: 24),
-            _SectionHeader(title: 'Steps (${recipe.steps.length})'),
-            const SizedBox(height: 8),
-            ...recipe.steps.map((s) => _StepRow(step: s)),
-          ],
-        ),
+              background: RecipeImage(
+                imageUrl: recipe.imageUrl,
+                height: 240,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _DifficultyBadge(difficulty: recipe.difficulty),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.gold.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Text('⭐ ${recipe.xpReward} XP',
+                            style: AppTextStyles.label(12, color: AppColors.gold)),
+                      ),
+                    ],
+                  ),
+                  if (recipe.description != null && recipe.description!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(recipe.description!,
+                          style: AppTextStyles.body(14, color: AppColors.muted)),
+                    ),
+                  const SizedBox(height: 24),
+                  _SectionHeader(title: 'Ingredients (${recipe.ingredients.length})'),
+                  const SizedBox(height: 8),
+                  ...recipe.ingredients.map((i) => _IngredientRow(ingredient: i)),
+                  const SizedBox(height: 24),
+                  _SectionHeader(title: 'Steps (${recipe.steps.length})'),
+                  const SizedBox(height: 8),
+                  ...recipe.steps.map((s) => _StepRow(step: s)),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -49,11 +82,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title,
-        style: Theme.of(context)
-            .textTheme
-            .titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold));
+    return Text(title, style: AppTextStyles.headingDark(18));
   }
 }
 

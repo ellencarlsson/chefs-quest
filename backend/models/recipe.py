@@ -16,6 +16,7 @@ class Recipe(Base):
     xp_reward: Mapped[int] = mapped_column(Integer, default=0)
     is_locked: Mapped[bool] = mapped_column(Boolean, default=True)
     category: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     steps: Mapped[list["RecipeStep"]] = relationship(
