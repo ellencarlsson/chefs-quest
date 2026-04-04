@@ -28,8 +28,20 @@ class RecipeBase(BaseModel):
     is_locked: bool = True
 
 
+class IngredientCreate(BaseModel):
+    name: str
+    amount: str | None = None
+    unit: str | None = None
+
+
+class StepCreate(BaseModel):
+    step_number: int
+    instruction: str
+
+
 class RecipeCreate(RecipeBase):
-    pass
+    ingredients: list[IngredientCreate] = []
+    steps: list[StepCreate] = []
 
 
 class RecipeUpdate(BaseModel):
