@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chefs Quest — Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      padding: 2rem;
+    }
+
+    h1 { font-size: 1.6rem; margin-bottom: 2rem; }
+    h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+
+    label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: .3rem;
+      margin-top: 1rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: .5rem .75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: .95rem;
+    }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    .row {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      margin-top: .4rem;
+    }
+
+    .row input { flex: 1; }
+
+    .btn {
+      padding: .45rem .9rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .9rem;
+      font-weight: 600;
+    }
+
+    .btn-primary { background: #f97316; color: #fff; }
+    .btn-primary:hover { background: #ea6d0f; }
+    .btn-sm { background: #eee; font-size: .8rem; padding: .3rem .7rem; }
+    .btn-sm:hover { background: #e0e0e0; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-danger:hover { background: #fecaca; }
+
+    #add-ingredient-btn, #add-step-btn {
+      margin-top: .5rem;
+      background: #f0fdf4;
+      color: #16a34a;
+      border: 1px dashed #86efac;
+    }
+
+    #save-btn { width: 100%; margin-top: 1.5rem; padding: .75rem; font-size: 1rem; }
+
+    #status {
+      margin-top: .75rem;
+      font-size: .85rem;
+      min-height: 1.2em;
+    }
+    .ok { color: #16a34a; }
+    .err { color: #dc2626; }
+
+    /* Recipe list */
+    #recipe-list { display: flex; flex-direction: column; gap: .75rem; }
+
+    .recipe-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .recipe-info strong { font-size: 1rem; }
+    .recipe-meta { font-size: .8rem; color: #666; margin-top: .2rem; }
+
+    .badge {
+      display: inline-block;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+    .easy   { background: #dcfce7; color: #166534; }
+    .medium { background: #fef9c3; color: #854d0e; }
+    .hard   { background: #fee2e2; color: #991b1b; }
+
+    #empty-msg { color: #999; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Chefs Quest — Recipe Admin</h1>
+
+  <div class="layout">
+    <!-- ADD FORM -->
+    <div class="card">
+      <h2>Add Recipe</h2>
+
+      <label>Title</label>
+      <input id="title" type="text" placeholder="Pasta Carbonara" />
+
+      <label>Description</label>
+      <textarea id="description" placeholder="Short description..."></textarea>
+
+      <label>Difficulty</label>
+      <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+
+      <label>XP Reward</label>
+      <input id="xp_reward" type="number" value="100" min="0" />
+
+      <!-- INGREDIENTS -->
+      <label>Ingredients</label>
+      <div id="ingredients"></div>
+      <button class="btn btn-sm" id="add-ingredient-btn" type="button">+ Add ingredient</button>
+
+      <!-- STEPS -->
+      <label>Steps</label>
+      <div id="steps"></div>
+      <button class="btn btn-sm" id="add-step-btn" type="button">+ Add step</button>
+
+      <button class="btn btn-primary" id="save-btn" type="button">Save Recipe</button>
+      <div id="status"></div>
+    </div>
+
+    <!-- RECIPE LIST -->
+    <div>
+      <h2>Existing Recipes</h2>
+      <div id="recipe-list"><p id="empty-msg">Loading...</p></div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8000';
+
+    // --- Ingredients ---
+    document.getElementById('add-ingredient-btn').addEventListener('click', addIngredientRow);
+
+    function addIngredientRow(name = '', amount = '', unit = '') {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <input type="text" placeholder="Name" value="${name}" data-field="name" />
+        <input type="text" placeholder="Amount" value="${amount}" data-field="amount" style="max-width:80px" />
+        <input type="text" placeholder="Unit" value="${unit}" data-field="unit" style="max-width:70px" />
+        <button class="btn btn-sm" onclick="this.parentElement.remove()">✕</button>
+      `;
+      document.getElementById('ingredients').appendChild(row);
+    }
+
+    function getIngredients() {
+      return [...document.querySelectorAll('#ingredients .row')].map(row => ({
+        name:   row.querySelector('[data-field=name]').value.trim(),
+        amount: row.querySelector('[data-field=amount]').value.trim(),
+        unit:   row.querySelector('[data-field=unit]').value.trim(),
+      })).filter(i => i.name);
+    }
+
+    // --- Steps ---
+    document.getElementById('add-step-btn').addEventListener('click', addStepRow);
+
+    function addStepRow(instruction = '') {
+      const container = document.getElementById('steps');
+      const num = container.children.length + 1;
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <span style="font-size:.8rem;color:#888;min-width:1.5rem">${num}.</span>
+        <input type="text" placeholder="Step instruction" value="${instruction}" data-field="instruction" />
+        <button class="btn btn-sm" onclick="this.parentElement.remove();reorderSteps()">✕</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function reorderSteps() {
+      [...document.querySelectorAll('#steps .row')].forEach((row, i) => {
+        row.querySelector('span').textContent = `${i + 1}.`;
+      });
+    }
+
+    function getSteps() {
+      return [...document.querySelectorAll('#steps .row')].map((row, i) => ({
+        step_number: i + 1,
+        instruction: row.querySelector('[data-field=instruction]').value.trim(),
+      })).filter(s => s.instruction);
+    }
+
+    // --- Save ---
+    document.getElementById('save-btn').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      const body = {
+        title:       document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        difficulty:  document.getElementById('difficulty').value,
+        xp_reward:   Number(document.getElementById('xp_reward').value),
+        is_locked:   false,
+      };
+
+      if (!body.title) { setStatus('Title is required.', true); return; }
+
+      try {
+        const res = await fetch(`${API}/recipes/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        setStatus('Recipe saved!', false);
+        resetForm();
+        loadRecipes();
+      } catch (e) {
+        setStatus(`Error: ${e.message}`, true);
+      }
+    });
+
+    function setStatus(msg, isError) {
+      const el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = isError ? 'err' : 'ok';
+    }
+
+    function resetForm() {
+      ['title', 'description', 'xp_reward'].forEach(id => {
+        document.getElementById(id).value = id === 'xp_reward' ? '100' : '';
+      });
+      document.getElementById('difficulty').value = 'medium';
+      document.getElementById('ingredients').innerHTML = '';
+      document.getElementById('steps').innerHTML = '';
+    }
+
+    // --- Load recipes ---
+    async function loadRecipes() {
+      const list = document.getElementById('recipe-list');
+      try {
+        const res = await fetch(`${API}/recipes/`);
+        const recipes = await res.json();
+        if (!recipes.length) {
+          list.innerHTML = '<p id="empty-msg">No recipes yet.</p>';
+          return;
+        }
+        list.innerHTML = recipes.map(r => `
+          <div class="recipe-card">
+            <div class="recipe-info">
+              <strong>${r.title}</strong>
+              <div class="recipe-meta">
+                <span class="badge ${r.difficulty}">${r.difficulty}</span>
+                &nbsp;${r.xp_reward} XP
+                &nbsp;&bull;&nbsp;${r.ingredients?.length ?? 0} ingredients
+                &nbsp;&bull;&nbsp;${r.steps?.length ?? 0} steps
+              </div>
+            </div>
+            <button class="btn btn-danger" onclick="deleteRecipe(${r.id})">Delete</button>
+          </div>
+        `).join('');
+      } catch {
+        list.innerHTML = '<p class="err">Could not connect to backend.</p>';
+      }
+    }
+
+    async function deleteRecipe(id) {
+      if (!confirm('Delete this recipe?')) return;
+      await fetch(`${API}/recipes/${id}`, { method: 'DELETE' });
+      loadRecipes();
+    }
+
+    loadRecipes();
+  </script>
+</body>
+</html>
