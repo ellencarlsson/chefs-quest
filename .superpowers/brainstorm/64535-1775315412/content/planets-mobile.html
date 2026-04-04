@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chefs Quest — Mobile Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, 'SF Pro Display', sans-serif;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #000;
+    border-radius: 54px;
+    box-shadow:
+      0 0 0 2px #333,
+      0 0 0 6px #1a1a1a,
+      0 30px 80px rgba(0,0,0,0.7);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Notch */
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 150px; height: 30px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  /* Status bar */
+  .status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 24px 6px;
+    z-index: 99;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Screen content */
+  .screen {
+    position: absolute;
+    inset: 0;
+    border-radius: 54px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 20%, #1a0a3a 0%, #080210 60%, #000 100%);
+  }
+
+  /* Stars */
+  .stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 8% 15%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1px 1px at 22% 8%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1.5px 1.5px at 35% 25%, rgba(255,220,100,0.8), transparent),
+      radial-gradient(1px 1px at 55% 12%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1px 1px at 68% 5%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1px 1px at 92% 10%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1px 1px at 12% 35%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 45% 42%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 88% 38%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1px 1px at 5% 55%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 75% 48%, rgba(255,255,255,0.4), transparent);
+    pointer-events: none;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: absolute;
+    top: 44px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    z-index: 10;
+    color: #F5E6C8;
+  }
+  .game-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #C4914A; font-weight: 700; }
+  .xp-pill {
+    background: rgba(196,145,74,0.2);
+    border: 1px solid rgba(196,145,74,0.5);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #F5C842;
+    font-weight: 700;
+  }
+
+  /* Map */
+  .map {
+    position: absolute;
+    top: 44px; left: 0; right: 0; bottom: 70px;
+  }
+
+  /* Planets */
+  .planet {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+  }
+
+  .orb {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 24px var(--glow), inset -6px -6px 16px rgba(0,0,0,0.4), inset 3px 3px 10px rgba(255,255,255,0.15);
+    animation: bob var(--spd,5s) ease-in-out infinite;
+    animation-delay: var(--del,0s);
+    position: relative;
+  }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .orb::after {
+    content:'';
+    position:absolute;
+    bottom:-5px; left:15%; width:70%; height:8px;
+    background: radial-gradient(ellipse,rgba(0,0,0,0.5),transparent);
+    border-radius:50%; filter:blur(3px);
+  }
+
+  .planet-label {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.9);
+    color: #F5E6C8;
+  }
+  .planet-sub { font-size: 10px; color: rgba(245,230,200,0.55); margin-top: 1px; }
+
+  /* Lock badge */
+  .lock {
+    position: absolute; top: -3px; right: -3px;
+    background: #100820;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+
+  /* SVG paths */
+  .paths { position: absolute; inset: 0; pointer-events: none; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: rgba(10,4,28,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(196,145,74,0.2);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: 12px;
+  }
+  .nav-btn { text-align: center; font-size: 10px; color: rgba(245,230,200,0.35); }
+  .nav-btn span { font-size: 20px; display: block; margin-bottom: 2px; }
+  .nav-btn.on { color: #C4914A; }
+
+  /* Glow rings on active planet */
+  .glow-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--glow);
+    animation: pulse var(--spd,5s) ease-in-out infinite;
+    animation-delay: var(--del,0s);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.4} 50%{transform:scale(1.12);opacity:0.1} }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>●●●</span>
+  </div>
+
+  <div class="screen">
+    <div class="stars"></div>
+
+    <div class="topbar">
+      <div class="game-title">Chefs Quest</div>
+      <div class="xp-pill">⭐ 340 XP</div>
+    </div>
+
+    <div class="map">
+
+      <svg class="paths" viewBox="0 0 375 698">
+        <path d="M 110 200 Q 180 240 240 300" stroke="rgba(196,145,74,0.2)" stroke-width="1" stroke-dasharray="4,6" fill="none"/>
+        <path d="M 240 300 Q 210 380 185 440" stroke="rgba(196,145,74,0.2)" stroke-width="1" stroke-dasharray="4,6" fill="none"/>
+        <path d="M 110 200 Q 140 320 185 440" stroke="rgba(196,145,74,0.12)" stroke-width="1" stroke-dasharray="4,6" fill="none"/>
+        <path d="M 240 300 Q 295 250 320 160" stroke="rgba(150,100,200,0.15)" stroke-width="1" stroke-dasharray="4,6" fill="none"/>
+      </svg>
+
+      <!-- Breakfast planet — upper left -->
+      <div class="planet" style="left:110px;top:200px;">
+        <div class="glow-ring" style="width:110px;height:110px;--glow:rgba(245,166,35,0.5);--spd:5s;--del:0s;margin-left:-5px;margin-top:-5px;"></div>
+        <div class="orb" style="width:100px;height:100px;background:radial-gradient(circle at 35% 35%,#FFE082,#F5A623,#B7660A);--glow:rgba(245,166,35,0.7);--spd:5s;--del:0s;font-size:38px;">🍳</div>
+        <div class="planet-label" style="color:#FFD54F;">Breakfast</div>
+        <div class="planet-sub">4 / 6 mastered</div>
+      </div>
+
+      <!-- Lunch planet — right -->
+      <div class="planet" style="left:255px;top:300px;">
+        <div class="orb" style="width:76px;height:76px;background:radial-gradient(circle at 35% 35%,#C8E6C9,#4CAF50,#1B5E20);--glow:rgba(76,175,80,0.6);--spd:6.5s;--del:1.2s;font-size:28px;">🥗</div>
+        <div class="planet-label" style="color:#81C784;">Lunch</div>
+        <div class="planet-sub">2 / 8 mastered</div>
+      </div>
+
+      <!-- Dinner planet — center bottom, biggest -->
+      <div class="planet" style="left:188px;top:445px;">
+        <div class="glow-ring" style="width:136px;height:136px;--glow:rgba(230,74,25,0.5);--spd:7s;--del:0.5s;margin-left:-3px;margin-top:-3px;"></div>
+        <div class="orb" style="width:130px;height:130px;background:radial-gradient(circle at 35% 35%,#FF8A65,#E64A19,#7B1600);--glow:rgba(230,74,25,0.8);--spd:7s;--del:0.5s;font-size:52px;">🍽️</div>
+        <div class="planet-label" style="color:#FF8A65;">Dinner</div>
+        <div class="planet-sub">8 / 10 mastered</div>
+      </div>
+
+      <!-- Snacks — locked, upper right -->
+      <div class="planet" style="left:318px;top:162px;opacity:0.45;">
+        <div class="orb" style="width:62px;height:62px;background:radial-gradient(circle at 35% 35%,#9575CD,#512DA8,#1A0050);--glow:rgba(81,45,168,0.3);--spd:4.5s;--del:2s;font-size:22px;filter:grayscale(0.3);">🍿
+          <div class="lock">🔒</div>
+        </div>
+        <div class="planet-label" style="color:#9575CD;">Snacks</div>
+        <div class="planet-sub">500 XP to unlock</div>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-btn on"><span>🌌</span>Map</div>
+      <div class="nav-btn"><span>📖</span>Recipes</div>
+      <div class="nav-btn"><span>👤</span>Profile</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

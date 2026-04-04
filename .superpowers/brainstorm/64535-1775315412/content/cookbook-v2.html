@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chefs Quest — Beautiful Cookbook</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #1c1208;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  font-family: 'Lato', sans-serif;
+}
+
+.phone {
+  width: 375px; height: 812px;
+  background: #000;
+  border-radius: 54px;
+  box-shadow: 0 0 0 2px #2a2a2a, 0 0 0 6px #111, 0 40px 100px rgba(0,0,0,0.8);
+  position: relative; overflow: hidden;
+}
+.notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 150px; height: 30px; background: #000;
+  border-radius: 0 0 20px 20px; z-index: 100;
+}
+.status-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 44px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 28px 7px; z-index: 99;
+  font-size: 12px; font-weight: 600;
+}
+
+.screen {
+  position: absolute; inset: 0;
+  border-radius: 54px; overflow: hidden;
+  background: #F4ECD8;
+}
+
+/* ── COVER / HERO ── */
+.cover {
+  position: relative;
+  height: 280px;
+  background:
+    linear-gradient(to bottom, rgba(20,10,4,0.15) 0%, rgba(20,10,4,0.6) 100%),
+    url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=750&q=80') center/cover no-repeat;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 24px 20px;
+}
+
+/* gold ribbon bookmark */
+.ribbon {
+  position: absolute; top: 0; right: 48px;
+  width: 18px; height: 60px;
+  background: linear-gradient(180deg, #D4A843, #B8882A);
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+  box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+}
+
+.cover-eyebrow {
+  font-family: 'Lato', sans-serif;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(245,220,160,0.8); margin-bottom: 6px;
+}
+.cover-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px; font-weight: 700; line-height: 1.1;
+  color: #FDF6EC;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.5);
+}
+.cover-title em { font-style: italic; color: #F5C842; }
+
+/* XP strip */
+.xp-strip {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 12px;
+}
+.xp-num { font-size: 12px; color: rgba(245,220,160,0.8); white-space: nowrap; }
+.xp-track { flex:1; height: 3px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden; }
+.xp-fill { height:100%; width:34%; background: linear-gradient(90deg,#C4914A,#F5C842); border-radius:99px; animation: grow 1.6s ease-out; }
+@keyframes grow { from{width:0} to{width:34%} }
+.xp-level { font-size: 11px; font-weight: 700; color: #F5C842; white-space: nowrap; }
+
+/* ── PAGE TURN EDGE ── */
+.page-edge {
+  position: relative;
+  background: #F4ECD8;
+  margin-top: -10px;
+  border-radius: 18px 18px 0 0;
+  padding: 0 0 0;
+  /* fake paper shadow under cover */
+  box-shadow: 0 -4px 0 #E8DFC8, 0 -8px 0 #DDD5BF;
+}
+
+.page-edge::before {
+  content: '';
+  position: absolute; top: -2px; left: 20px; right: 20px; height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(180,160,120,0.3) 0px, rgba(180,160,120,0.3) 4px, transparent 4px, transparent 8px);
+}
+
+/* Category tabs */
+.tabs {
+  display: flex; gap: 0;
+  padding: 16px 20px 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tab {
+  padding: 8px 16px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: #8B7355; cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+}
+.tab.active {
+  color: #2C1A0E;
+  border-bottom: 2px solid #C4914A;
+}
+
+/* ── RECIPE CARDS — full bleed with photo ── */
+.cards { padding: 12px 16px; overflow-y: auto; height: 380px; }
+
+.recipe-card {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(44,26,14,0.12);
+  cursor: pointer;
+  display: flex;
+  height: 100px;
+  position: relative;
+}
+
+.card-photo {
+  width: 100px; flex-shrink: 0;
+  background: var(--ph, #E8D5B0) center/cover no-repeat;
+  position: relative;
+}
+
+.card-photo .emoji-overlay {
+  position: absolute; inset:0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px;
+  background: linear-gradient(135deg, var(--c1,#E8A020), var(--c2,#B7660A));
+}
+
+.card-body {
+  flex:1; padding: 14px 14px 12px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+
+.card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; line-height: 1.2;
+  color: #2C1A0E; font-weight: 700;
+}
+
+.card-meta { display: flex; align-items: center; gap: 8px; }
+
+.diff {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 99px;
+}
+.easy { background: #DCFCE7; color: #166534; }
+.medium { background: #FEF9C3; color: #854D0E; }
+.hard { background: #FEE2E2; color: #991B1B; }
+
+.card-xp { font-size: 11px; color: #C4914A; font-weight: 600; }
+
+/* Arrow */
+.card-arrow {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: #D4B896; font-size: 18px; font-weight: 300;
+}
+
+/* ── LOCKED card ── */
+.recipe-card.locked .card-name { color: #9C8C7C; }
+.recipe-card.locked .card-body { background: #F8F2E8; }
+
+.locked-overlay {
+  position: absolute; inset: 0;
+  background: rgba(244,236,216,0.72);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px;
+}
+.locked-pill {
+  background: rgba(44,26,14,0.08);
+  border: 1px solid rgba(44,26,14,0.14);
+  border-radius: 99px; padding: 6px 16px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #6B5744; font-weight: 600;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+  background: #FDF8F0;
+  border-top: 1px solid rgba(44,26,14,0.08);
+  display: flex; justify-content: space-around; align-items: center;
+  padding-bottom: 10px;
+}
+.nav-btn { text-align: center; font-size: 10px; color: #C0AE98; letter-spacing: 0.5px; }
+.nav-btn span { font-size: 20px; display: block; margin-bottom: 2px; }
+.nav-btn.on { color: #2C1A0E; font-weight: 700; }
+
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status-bar" style="color:#FDF6EC;"><span>9:41</span><span>●●●</span></div>
+
+  <div class="screen">
+
+    <!-- Hero cover photo -->
+    <div class="cover">
+      <div class="ribbon"></div>
+      <div class="cover-eyebrow">Your Collection</div>
+      <div class="cover-title">The<br><em>Chefs Quest</em><br>Cookbook</div>
+      <div class="xp-strip">
+        <div class="xp-num">340 XP</div>
+        <div class="xp-track"><div class="xp-fill"></div></div>
+        <div class="xp-level">Lv 5 → 160 XP</div>
+      </div>
+    </div>
+
+    <!-- Page with deckled top edge -->
+    <div class="page-edge">
+      <div class="tabs">
+        <div class="tab active">All</div>
+        <div class="tab">Breakfast</div>
+        <div class="tab">Lunch</div>
+        <div class="tab">Dinner</div>
+        <div class="tab">Snacks</div>
+      </div>
+
+      <div class="cards">
+
+        <!-- Unlocked -->
+        <div class="recipe-card">
+          <div class="card-photo">
+            <div class="emoji-overlay" style="--c1:#FF8A65;--c2:#BF360C;">🍝</div>
+          </div>
+          <div class="card-body">
+            <div class="card-name">Pasta Carbonara</div>
+            <div class="card-meta">
+              <span class="diff easy">Easy</span>
+              <span class="card-xp">+100 XP</span>
+            </div>
+          </div>
+          <div class="card-arrow">›</div>
+        </div>
+
+        <div class="recipe-card">
+          <div class="card-photo">
+            <div class="emoji-overlay" style="--c1:#8D6E63;--c2:#4E342E;">🥘</div>
+          </div>
+          <div class="card-body">
+            <div class="card-name">Chicken Gratin</div>
+            <div class="card-meta">
+              <span class="diff hard">Hard</span>
+              <span class="card-xp">+250 XP</span>
+            </div>
+          </div>
+          <div class="card-arrow">›</div>
+        </div>
+
+        <!-- Locked -->
+        <div class="recipe-card locked">
+          <div class="card-photo">
+            <div class="emoji-overlay" style="--c1:#B0BEC5;--c2:#78909C;filter:grayscale(1);opacity:.5">🥩</div>
+          </div>
+          <div class="card-body">
+            <div class="card-name">Beef Bourguignon</div>
+            <div class="card-meta">
+              <span class="diff medium">Medium</span>
+              <span class="card-xp" style="color:#9C8C7C;">+200 XP</span>
+            </div>
+          </div>
+          <div class="locked-overlay">
+            <div class="locked-pill">🔒 160 XP away</div>
+          </div>
+        </div>
+
+        <div class="recipe-card">
+          <div class="card-photo">
+            <div class="emoji-overlay" style="--c1:#F9A825;--c2:#F57F17;">🍳</div>
+          </div>
+          <div class="card-body">
+            <div class="card-name">Eggs Benedict</div>
+            <div class="card-meta">
+              <span class="diff medium">Medium</span>
+              <span class="card-xp">+150 XP</span>
+            </div>
+          </div>
+          <div class="card-arrow">›</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-btn"><span>🌌</span>Map</div>
+      <div class="nav-btn on"><span>📖</span>Recipes</div>
+      <div class="nav-btn"><span>👤</span>Profile</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
