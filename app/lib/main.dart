@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_theme.dart';
+import 'screens/welcome_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/kitchen_screen.dart';
 import 'screens/archive_screen.dart';
@@ -22,7 +23,11 @@ class ChefsQuestApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.interTextTheme(),
       ),
-      home: const _RootNav(),
+      initialRoute: '/welcome',
+      routes: {
+        '/welcome': (_) => const WelcomeScreen(),
+        '/home': (_) => const _RootNav(),
+      },
     );
   }
 }
@@ -54,25 +59,25 @@ class _RootNavState extends State<_RootNav> {
         backgroundColor: AppColors.dark,
         indicatorColor: AppColors.gold.withOpacity(0.25),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: [
+        destinations: const [
           NavigationDestination(
-            icon: const Text('🏠', style: TextStyle(fontSize: 22)),
-            selectedIcon: const Text('🏠', style: TextStyle(fontSize: 24)),
+            icon: Text('🏠', style: TextStyle(fontSize: 22)),
+            selectedIcon: Text('🏠', style: TextStyle(fontSize: 24)),
             label: 'Hem',
           ),
           NavigationDestination(
-            icon: const Text('🍳', style: TextStyle(fontSize: 22)),
-            selectedIcon: const Text('🍳', style: TextStyle(fontSize: 24)),
+            icon: Text('🍳', style: TextStyle(fontSize: 22)),
+            selectedIcon: Text('🍳', style: TextStyle(fontSize: 24)),
             label: 'Utforska',
           ),
           NavigationDestination(
-            icon: const Text('📚', style: TextStyle(fontSize: 22)),
-            selectedIcon: const Text('📚', style: TextStyle(fontSize: 24)),
+            icon: Text('📚', style: TextStyle(fontSize: 22)),
+            selectedIcon: Text('📚', style: TextStyle(fontSize: 24)),
             label: 'Vänner',
           ),
           NavigationDestination(
-            icon: const Text('👤', style: TextStyle(fontSize: 22)),
-            selectedIcon: const Text('👤', style: TextStyle(fontSize: 24)),
+            icon: Text('👤', style: TextStyle(fontSize: 22)),
+            selectedIcon: Text('👤', style: TextStyle(fontSize: 24)),
             label: 'Profil',
           ),
         ],
