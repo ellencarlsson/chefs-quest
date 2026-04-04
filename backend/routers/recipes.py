@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models.recipe import Recipe
+from backend.models.recipe_ingredient import RecipeIngredient
+from backend.models.recipe_step import RecipeStep
 from backend.schemas.recipe import RecipeCreate, RecipeUpdate, RecipeResponse
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
@@ -24,8 +26,14 @@ def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=RecipeResponse, status_code=201)
 def create_recipe(body: RecipeCreate, db: Session = Depends(get_db)):
-    recipe = Recipe(**body.model_dump())
+    data = body.model_dump(exclude={"ingredients", "steps"})
+    recipe = Recipe(**data)
     db.add(recipe)
+    db.flush()
+    for ing in body.ingredients:
+        db.add(RecipeIngredient(recipe_id=recipe.id, **ing.model_dump()))
+    for step in body.steps:
+        db.add(RecipeStep(recipe_id=recipe.id, **step.model_dump()))
     db.commit()
     db.refresh(recipe)
     return recipe
