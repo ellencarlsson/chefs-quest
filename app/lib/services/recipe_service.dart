@@ -7,7 +7,7 @@ const String kBaseUrl = 'http://192.168.1.31:8000';
 
 class RecipeService {
   static Future<List<Recipe>> fetchRecipes() async {
-    final response = await http.get(Uri.parse('$kBaseUrl/recipes/'));
+    final response = await http.get(Uri.parse('$kBaseUrl/recipes/')).timeout(const Duration(seconds: 5));
     if (response.statusCode != 200) {
       throw Exception('Failed to load recipes');
     }
