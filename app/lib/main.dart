@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/recipe_library_screen.dart';
 
 void main() {
   runApp(const ChefsQuestApp());
@@ -15,11 +16,7 @@ class ChefsQuestApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Chefs Quest'),
-        ),
-      ),
+      home: const RecipeLibraryScreen(),
     );
   }
 }
