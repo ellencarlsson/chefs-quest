@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chefs Quest — Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #3d6b4f;
+      --green-dark: #2e5239;
+      --green-light:#e8f0eb;
+      --cream:      #f5f0e8;
+      --cream2:     #fff;
+      --text:       #1a1a1a;
+      --muted:      #8a9e90;
+    }
+
+    body {
+      background: #d6cfc4;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .phone {
+      width: 390px;
+      min-height: 844px;
+      background: var(--cream);
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      background: var(--green-dark);
+      display: flex;
+      padding: 14px 0 28px;
+      flex-shrink: 0;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .nav-icon { font-size: 20px; opacity: 0.5; }
+    .nav-icon.active { opacity: 1; }
+    .nav-label {
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+    .nav-item.active .nav-label { color: #fff; }
+
+    /* ══ HOME SCREEN ══ */
+    .home-scroll { flex: 1; overflow-y: auto; }
+
+    /* Green top bar */
+    .home-bar {
+      background: var(--green);
+      padding: 54px 24px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .home-bar-left .hello {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .home-bar-left h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .xp-pill {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 8px 14px;
+      text-align: center;
+    }
+
+    .xp-pill .num {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .xp-pill .lbl {
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Hero photo area */
+    .hero-photo {
+      width: 100%;
+      height: 200px;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-photo-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(to top, var(--cream), transparent);
+    }
+
+    /* White card that rises */
+    .home-card {
+      background: var(--cream);
+      margin: -20px 0 0;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-link {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    /* Category grid — 2 col */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .cat-tile {
+      background: var(--cream2);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .cat-tile:active { transform: scale(0.96); }
+
+    .cat-tile-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .cat-tile-emoji {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .cat-tile-count {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .cat-tile-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .prog-bar {
+      height: 4px;
+      background: #e8e2d8;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 2px;
+    }
+
+    /* Recently added */
+    .recent-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .recent-scroll::-webkit-scrollbar { display: none; }
+
+    .recent-card {
+      flex-shrink: 0;
+      width: 120px;
+      background: var(--cream2);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .recent-photo {
+      width: 100%;
+      height: 80px;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    .recent-info { padding: 10px; }
+
+    .recent-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .recent-xp {
+      font-size: 10px;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ══ CATEGORY SCREEN ══ */
+    .cat-hero {
+      background: var(--green);
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .cat-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(46,82,57,0.3);
+    }
+
+    .cat-hero-back {
+      position: absolute;
+      top: 54px;
+      left: 20px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cat-body {
+      background: var(--cream);
+      border-radius: 24px 24px 0 0;
+      margin-top: -20px;
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cat-body-head {
+      padding: 20px 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .cat-body-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .cat-body-xp {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* Path */
+    .path-wrap {
+      padding: 0 20px 60px;
+      position: relative;
+    }
+
+    .path-track {
+      position: absolute;
+      left: 50%;
+      top: 14px;
+      bottom: 60px;
+      width: 2px;
+      transform: translateX(-50%);
+      background: repeating-linear-gradient(
+        to bottom,
+        #d0c9be 0, #d0c9be 6px,
+        transparent 6px, transparent 14px
+      );
+    }
+
+    .node-row {
+      position: relative;
+      display: flex;
+      margin-bottom: 16px;
+    }
+
+    .node-row:nth-child(odd)  { justify-content: flex-start; }
+    .node-row:nth-child(even) { justify-content: flex-end; }
+
+    .node-dot {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #d0c9be;
+      border: 2px solid var(--cream);
+      z-index: 2;
+    }
+
+    .node-dot.done    { background: var(--green); }
+    .node-dot.current { background: #c8933a; box-shadow: 0 0 0 3px rgba(200,147,58,0.25); }
+
+    .node-card {
+      width: 150px;
+      background: var(--cream2);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: transform 0.15s;
+      z-index: 1;
+    }
+
+    .node-card:active { transform: scale(0.96); }
+
+    .node-card.locked { background: #edeae4; box-shadow: none; }
+    .node-card.current { box-shadow: 0 0 0 2px #c8933a, 0 4px 14px rgba(200,147,58,0.2); }
+    .node-card.done    { box-shadow: 0 0 0 2px var(--green), 0 3px 10px rgba(61,107,79,0.1); }
+
+    .node-img {
+      width: 100%;
+      height: 80px;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      position: relative;
+    }
+
+    .node-img.locked-img { background: #e5e0d8; }
+
+    .done-badge {
+      position: absolute;
+      bottom: 6px; right: 6px;
+      width: 20px; height: 20px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+    }
+
+    .lock-dim {
+      position: absolute;
+      inset: 0;
+      background: rgba(230,225,218,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      opacity: 0.5;
+    }
+
+    .node-info { padding: 10px 12px 12px; }
+
+    .node-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 5px;
+      line-height: 1.3;
+    }
+
+    .node-card.locked .node-name { color: #b0a898; }
+
+    .node-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .node-card.done    .node-tag { background: var(--green-light); color: var(--green); }
+    .node-card.current .node-tag { background: #fef3e2; color: #c8933a; }
+    .node-card.locked  .node-tag { background: #e8e3dc; color: #b0a898; }
+
+    /* ══ MODAL ══ */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(20,35,25,0.55);
+      display: flex; align-items: flex-end;
+      z-index: 100;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--cream);
+      border-radius: 28px 28px 0 0;
+      padding: 10px 22px 44px;
+      width: 100%;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .modal-overlay.show .modal { transform: translateY(0); }
+
+    .handle {
+      width: 36px; height: 4px;
+      background: #d0c9be;
+      border-radius: 2px;
+      margin: 12px auto 20px;
+    }
+
+    .modal-img {
+      width: 100%; height: 130px;
+      border-radius: 18px;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 54px;
+      margin-bottom: 18px;
+    }
+
+    .modal-eyebrow {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .modal-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+
+    .modal-pills {
+      display: flex; gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .mpill {
+      flex: 1; background: #fff;
+      border-radius: 12px; padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .mpill-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--text);
+    }
+
+    .mpill-lbl {
+      font-size: 9px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .mbtn {
+      width: 100%; padding: 17px;
+      border-radius: 14px; border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s;
+      margin-bottom: 9px;
+    }
+
+    .mbtn:active { transform: scale(0.98); }
+    .mbtn-primary { background: var(--green); color: #fff; }
+    .mbtn-secondary { background: #edeae4; color: #9a8c7e; }
+
+    /* ══ SUCCESS ══ */
+    .success-screen {
+      position: absolute; inset: 0;
+      background: var(--green-dark);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+      padding: 40px;
+    }
+
+    .success-screen.show { opacity: 1; pointer-events: all; }
+
+    .success-emoji {
+      font-size: 80px;
+      animation: popIn 0.5s cubic-bezier(0.36,0.07,0.19,0.97) both;
+      margin-bottom: 28px;
+    }
+
+    @keyframes popIn {
+      0%   { transform: scale(0.2); opacity: 0; }
+      70%  { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .success-eye {
+      font-size: 11px; letter-spacing: 3px;
+      text-transform: uppercase; color: rgba(255,255,255,0.45);
+      margin-bottom: 10px;
+    }
+
+    .success-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; font-weight: 700;
+      color: #fff; text-align: center;
+      line-height: 1.3; margin-bottom: 22px;
+    }
+
+    .success-badge {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 13px; font-weight: 500;
+      padding: 10px 22px; border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ══ HOME ══ -->
+  <div class="screen active" id="screen-home">
+    <div class="home-scroll">
+      <div class="home-bar">
+        <div class="home-bar-left">
+          <div class="hello">God morgon, Ellen 👋</div>
+          <h1>Chefs Quest</h1>
+        </div>
+        <div class="xp-pill">
+          <div class="num">1 240</div>
+          <div class="lbl">XP</div>
+        </div>
+      </div>
+
+      <div class="hero-photo">
+        🥗
+        <div class="hero-photo-overlay"></div>
+      </div>
+
+      <div class="home-card">
+        <div class="section-head">
+          <div class="section-title">Kategorier</div>
+        </div>
+        <div class="cat-grid">
+          <div class="cat-tile" onclick="openCat('frukost')">
+            <div class="cat-tile-top">
+              <div class="cat-tile-emoji">🍳</div>
+              <div class="cat-tile-count">3/6</div>
+            </div>
+            <div class="cat-tile-name">Frukost</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:53%"></div></div>
+          </div>
+          <div class="cat-tile" onclick="openCat('lunch')">
+            <div class="cat-tile-top">
+              <div class="cat-tile-emoji">🥗</div>
+              <div class="cat-tile-count">2/6</div>
+            </div>
+            <div class="cat-tile-name">Lunch</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:33%"></div></div>
+          </div>
+          <div class="cat-tile" onclick="openCat('middag')">
+            <div class="cat-tile-top">
+              <div class="cat-tile-emoji">🍽️</div>
+              <div class="cat-tile-count">4/8</div>
+            </div>
+            <div class="cat-tile-name">Middag</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div>
+          </div>
+          <div class="cat-tile" onclick="openCat('mellanmal')">
+            <div class="cat-tile-top">
+              <div class="cat-tile-emoji">🧁</div>
+              <div class="cat-tile-count">1/5</div>
+            </div>
+            <div class="cat-tile-name">Mellanmål</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:20%"></div></div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-title">Senast lagat</div>
+        </div>
+        <div class="recent-scroll">
+          <div class="recent-card">
+            <div class="recent-photo">🍝</div>
+            <div class="recent-info">
+              <div class="recent-name">Pasta Carbonara</div>
+              <div class="recent-xp">+100 XP</div>
+            </div>
+          </div>
+          <div class="recent-card">
+            <div class="recent-photo">🥑</div>
+            <div class="recent-info">
+              <div class="recent-name">Avokadotoast</div>
+              <div class="recent-xp">+80 XP</div>
+            </div>
+          </div>
+          <div class="recent-card">
+            <div class="recent-photo">🍫</div>
+            <div class="recent-info">
+              <div class="recent-name">Kladdkaka</div>
+              <div class="recent-xp">+100 XP</div>
+            </div>
+          </div>
+          <div class="recent-card">
+            <div class="recent-photo">🐟</div>
+            <div class="recent-info">
+              <div class="recent-name">Laxfilé</div>
+              <div class="recent-xp">+120 XP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <div class="nav-icon active">🏠</div>
+        <div class="nav-label">Hem</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">🔍</div>
+        <div class="nav-label">Utforska</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">👥</div>
+        <div class="nav-label">Vänner</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CATEGORY SCREEN ══ -->
+  <div class="screen" id="screen-cat">
+    <div class="cat-hero" id="cat-hero">
+      <div class="cat-hero-overlay"></div>
+      <div class="cat-hero-back" onclick="goHome()">← Tillbaka</div>
+      <span id="cat-hero-emoji" style="position:relative;z-index:1">🍳</span>
+    </div>
+
+    <div class="cat-body">
+      <div class="cat-body-head">
+        <div class="cat-body-title" id="cat-body-title">Frukost</div>
+        <div class="cat-body-xp" id="cat-body-xp">320 XP</div>
+      </div>
+      <div class="path-wrap" id="path-wrap">
+        <div class="path-track"></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Hem</div>
+      </div>
+      <div class="nav-item active">
+        <div class="nav-icon active">📖</div>
+        <div class="nav-label">Recept</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">👥</div>
+        <div class="nav-label">Vänner</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL ══ -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="handle"></div>
+      <div class="modal-img" id="modal-img">🥐</div>
+      <div class="modal-eyebrow">Lås upp recept</div>
+      <div class="modal-name" id="modal-name">Franska pannkakor</div>
+      <div class="modal-pills">
+        <div class="mpill">
+          <div class="mpill-num" id="mpill-cost">80</div>
+          <div class="mpill-lbl">Kostar XP</div>
+        </div>
+        <div class="mpill">
+          <div class="mpill-num">1 240</div>
+          <div class="mpill-lbl">Ditt saldo</div>
+        </div>
+        <div class="mpill">
+          <div class="mpill-num" id="mpill-after">1 160</div>
+          <div class="mpill-lbl">Kvar efter</div>
+        </div>
+      </div>
+      <button class="mbtn mbtn-primary" onclick="doUnlock()">Lås upp</button>
+      <button class="mbtn mbtn-secondary" onclick="closeModal()">Avbryt</button>
+    </div>
+  </div>
+
+  <!-- ══ SUCCESS ══ -->
+  <div class="success-screen" id="success">
+    <div class="success-emoji" id="succ-emoji">🥐</div>
+    <div class="success-eye">Upplåst</div>
+    <div class="success-name" id="succ-name">Franska pannkakor</div>
+    <div class="success-badge" id="succ-badge">+80 XP när du lagar det</div>
+  </div>
+
+</div>
+<script>
+  const cats = {
+    frukost: {
+      name: 'Frukost', emoji: '🍳', xp: '320 XP intjänat',
+      recipes: [
+        { name: 'Äggröra med örter',  e: '🍳', xp: 60,  s: 'done'    },
+        { name: 'Overnight oats',      e: '🥣', xp: 60,  s: 'done'    },
+        { name: 'Avokadotoast',        e: '🥑', xp: 80,  s: 'done'    },
+        { name: 'Franska pannkakor',   e: '🥐', xp: 80,  s: 'current' },
+        { name: 'Äggbenedict',         e: '🍳', xp: 120, s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 160, s: 'locked'  },
+      ]
+    },
+    lunch: {
+      name: 'Lunch', emoji: '🥗', xp: '200 XP intjänat',
+      recipes: [
+        { name: 'Ceasarsallad',        e: '🥗', xp: 80,  s: 'done'    },
+        { name: 'Linsoppa',            e: '🍲', xp: 80,  s: 'done'    },
+        { name: 'Buddha bowl',         e: '🥙', xp: 100, s: 'current' },
+        { name: 'Pad Thai',            e: '🍜', xp: 140, s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 120, s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 180, s: 'locked'  },
+      ]
+    },
+    middag: {
+      name: 'Middag', emoji: '🍽️', xp: '580 XP intjänat',
+      recipes: [
+        { name: 'Pasta Carbonara',     e: '🍝', xp: 100, s: 'done'    },
+        { name: 'Laxfilé citronsmör',  e: '🐟', xp: 120, s: 'done'    },
+        { name: 'Kycklingcurry',       e: '🍛', xp: 120, s: 'done'    },
+        { name: 'Köttbullar',          e: '🥩', xp: 140, s: 'done'    },
+        { name: 'Risotto ai funghi',   e: '🍄', xp: 160, s: 'current' },
+        { name: 'Boeuf Bourguignon',   e: '🥩', xp: 200, s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 180, s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 220, s: 'locked'  },
+      ]
+    },
+    mellanmal: {
+      name: 'Mellanmål', emoji: '🧁', xp: '140 XP intjänat',
+      recipes: [
+        { name: 'Kladdkaka',           e: '🍫', xp: 100, s: 'done'    },
+        { name: 'Energibollar',        e: '⚡', xp: 80,  s: 'current' },
+        { name: 'Hummus & pita',       e: '🫓', xp: 80,  s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 120, s: 'locked'  },
+        { name: '???',                 e: '🔒', xp: 160, s: 'locked'  },
+      ]
+    }
+  };
+
+  let unlockData = {};
+
+  function goHome() {
+    document.getElementById('screen-home').classList.add('active');
+    document.getElementById('screen-cat').classList.remove('active');
+  }
+
+  function openCat(key) {
+    const c = cats[key];
+    document.getElementById('cat-hero-emoji').textContent = c.emoji;
+    document.getElementById('cat-body-title').textContent = c.name;
+    document.getElementById('cat-body-xp').textContent = c.xp;
+
+    const wrap = document.getElementById('path-wrap');
+    wrap.innerHTML = '<div class="path-track"></div>';
+
+    c.recipes.forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'node-row';
+
+      const dot = document.createElement('div');
+      dot.className = 'node-dot ' + (r.s === 'done' ? 'done' : r.s === 'current' ? 'current' : '');
+      row.appendChild(dot);
+
+      const mystery = r.name === '???';
+      const card = document.createElement('div');
+      card.className = 'node-card ' + r.s;
+
+      let imgExtra = '';
+      if (r.s === 'done') imgExtra = '<div class="done-badge">✓</div>';
+      if (r.s === 'locked') imgExtra = '<div class="lock-dim">🔒</div>';
+
+      card.innerHTML = `
+        <div class="node-img ${r.s === 'locked' ? 'locked-img' : ''}">
+          ${mystery ? '?' : r.e}
+          ${imgExtra}
+        </div>
+        <div class="node-info">
+          <div class="node-name">${mystery ? 'Okänt recept' : r.name}</div>
+          <span class="node-tag">${r.s === 'done' ? '✓ ' : ''}${r.xp} XP</span>
+        </div>
+      `;
+
+      if (r.s !== 'done') {
+        card.onclick = () => {
+          unlockData = r;
+          document.getElementById('modal-img').textContent = mystery ? '🔒' : r.e;
+          document.getElementById('modal-name').textContent = mystery ? 'Okänt recept' : r.name;
+          document.getElementById('mpill-cost').textContent = r.xp;
+          document.getElementById('mpill-after').textContent = (1240 - r.xp).toLocaleString('sv');
+          document.getElementById('modal').classList.add('show');
+        };
+      }
+
+      row.appendChild(card);
+      wrap.appendChild(row);
+    });
+
+    document.getElementById('screen-home').classList.remove('active');
+    document.getElementById('screen-cat').classList.add('active');
+  }
+
+  function closeModal(e) {
+    if (!e || e.target === document.getElementById('modal'))
+      document.getElementById('modal').classList.remove('show');
+  }
+
+  function doUnlock() {
+    document.getElementById('modal').classList.remove('show');
+    const mystery = unlockData.name === '???';
+    document.getElementById('succ-emoji').textContent = mystery ? '🎉' : unlockData.e;
+    document.getElementById('succ-name').textContent = mystery ? 'Okänt recept!' : unlockData.name;
+    document.getElementById('succ-badge').textContent = '+' + unlockData.xp + ' XP när du lagar det';
+    const s = document.getElementById('success');
+    s.classList.add('show');
+    setTimeout(() => s.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>

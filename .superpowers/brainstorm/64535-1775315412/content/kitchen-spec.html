@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chefs Quest — Kitchen UX</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── PHONE SHELL ── */
+.phone {
+  width: 390px;
+  height: 844px;
+  background: #000;
+  border-radius: 55px;
+  box-shadow: 0 0 0 2px #2a2a2a, 0 0 0 7px #111, 0 40px 100px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.05);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 37px;
+  background: #000; border-radius: 0 0 22px 22px;
+  z-index: 200;
+}
+
+.status {
+  position: absolute; top: 0; left: 0; right: 0; height: 52px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 30px 9px;
+  font-size: 13px; font-weight: 600;
+  z-index: 150;
+  color: #F5E6C8;
+}
+
+/* ── SCREEN ── */
+.screen {
+  position: absolute; inset: 0;
+  border-radius: 55px;
+  overflow: hidden;
+  background: #F7F0E4;
+}
+
+/* ── KITCHEN SCENE ── */
+.kitchen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sky / wall */
+.wall {
+  flex: 1;
+  background: linear-gradient(180deg, #FFF4E0 0%, #FFE8C4 100%);
+  position: relative;
+  min-height: 0;
+}
+
+/* Window */
+.window {
+  position: absolute;
+  top: 62px; left: 50%; transform: translateX(-50%);
+  width: 130px; height: 90px;
+  background: linear-gradient(180deg, #87CEEB 0%, #B0E0F5 50%, #FFEAA0 100%);
+  border-radius: 4px;
+  border: 5px solid #8B6340;
+  box-shadow: inset 0 0 20px rgba(135,206,235,.5), 0 2px 8px rgba(0,0,0,.2);
+  overflow: hidden;
+}
+.window::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; width: 3px; height: 100%;
+  background: #8B6340; transform: translateX(-50%);
+}
+.window::after {
+  content: '';
+  position: absolute; top: 50%; left: 0; right: 0; height: 3px;
+  background: #8B6340;
+}
+.window-sun {
+  position: absolute; bottom: 6px; right: 10px;
+  width: 22px; height: 22px;
+  background: radial-gradient(circle, #FFD700, #FFA500);
+  border-radius: 50%;
+  box-shadow: 0 0 8px #FFD700;
+}
+
+/* Restaurant name tag */
+.resto-name {
+  position: absolute;
+  top: 14px; left: 0; right: 0;
+  text-align: center;
+}
+.resto-name span {
+  background: rgba(44,26,14,.85);
+  color: #F5C842;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-style: italic;
+  padding: 4px 16px;
+  border-radius: 99px;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(196,145,74,.4);
+}
+
+/* ── SHELF ── */
+.shelf-section {
+  background: transparent;
+  position: relative;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.shelf-board {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 10px;
+  background: linear-gradient(180deg, #8B6340, #6B4820);
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+
+.shelf-back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #E8D5B0 0%, #DCC89A 100%);
+}
+
+.books {
+  position: absolute;
+  bottom: 10px;
+  left: 24px; right: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.book {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.book-spine {
+  border-radius: 3px 3px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 2px 0 4px rgba(0,0,0,.2), inset -2px 0 4px rgba(0,0,0,.1);
+  transition: transform .2s;
+}
+.book-spine:hover { transform: translateY(-4px); }
+
+.book-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.9);
+  white-space: nowrap;
+  padding: 4px 0;
+}
+
+.book-emoji {
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+/* Unlocked books */
+.book-breakfast .book-spine { background: linear-gradient(135deg, #F5A623, #E8820A); width: 28px; height: 78px; }
+.book-lunch .book-spine     { background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 22px; height: 65px; }
+.book-dinner .book-spine    { background: linear-gradient(135deg, #C4514A, #8B2420); width: 34px; height: 90px; }
+.book-baking .book-spine    { background: linear-gradient(135deg, #9575CD, #5E35B1); width: 18px; height: 55px; }
+
+/* Locked book */
+.book-drinks .book-spine {
+  background: linear-gradient(135deg, #BDBDBD, #9E9E9E);
+  width: 16px; height: 50px;
+  opacity: .5; filter: grayscale(1);
+}
+.book-drinks .book-label { color: rgba(0,0,0,.3); }
+
+/* ── COUNTER ── */
+.counter {
+  flex-shrink: 0;
+  height: 220px;
+  position: relative;
+}
+
+.counter-top {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 14px;
+  background: linear-gradient(180deg, #D4C5A8, #BFB090);
+  border-top: 2px solid #E0D4BC;
+  box-shadow: 0 3px 8px rgba(0,0,0,.2);
+}
+
+.counter-body {
+  position: absolute;
+  top: 14px; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #C8B898, #B8A888);
+}
+
+/* Counter items */
+.counter-items {
+  position: absolute;
+  top: -55px; left: 0; right: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 28px;
+  gap: 14px;
+}
+
+.tool {
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer;
+}
+.tool-emoji { font-size: 40px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.3)); }
+.tool-label {
+  font-size: 8px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: rgba(44,26,14,.5);
+  margin-top: 2px; white-space: nowrap;
+}
+
+/* Cutting board + items on counter */
+.cutting-board {
+  position: absolute;
+  top: 20px; left: 30px;
+  width: 90px; height: 50px;
+  background: linear-gradient(135deg, #D4A56A, #B8865A);
+  border-radius: 8px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  gap: 4px;
+}
+
+.mortar {
+  position: absolute;
+  top: 18px; right: 50px;
+  font-size: 30px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.25));
+}
+
+.kettle {
+  position: absolute;
+  top: 8px; right: 20px;
+  font-size: 38px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+}
+
+/* ── BOTTOM PANEL ── */
+.bottom-panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(255,248,238,.97);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(196,145,74,.2);
+  padding: 12px 20px 30px;
+}
+
+.menu-btn {
+  background: linear-gradient(135deg, #C4914A, #D4A85A);
+  border: none;
+  border-radius: 14px;
+  padding: 14px 24px;
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #1C0E04; font-size: 15px; font-weight: 700;
+  box-shadow: 0 6px 20px rgba(196,145,74,.4);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  position: absolute;
+  bottom: 80px; left: 0; right: 0;
+  justify-content: space-around;
+  padding: 0 20px;
+}
+/* Just nav dots — the real nav is the bottom panel */
+
+/* ── SIDE LABEL ── */
+.side-notes {
+  max-width: 300px;
+  color: #aaa;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.side-notes h3 { color: #C4914A; font-size: 15px; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.side-notes .note { margin-bottom: 16px; }
+.side-notes .note strong { color: #F5E6C8; display: block; margin-bottom: 4px; }
+.callout {
+  background: rgba(196,145,74,.1);
+  border-left: 3px solid #C4914A;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #bbb;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- PHONE -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+
+  <div class="screen">
+    <div class="kitchen">
+
+      <!-- WALL -->
+      <div class="wall">
+        <div class="window">
+          <div class="window-sun"></div>
+        </div>
+        <div class="resto-name"><span>✦ Ellens Bistro ✦</span></div>
+      </div>
+
+      <!-- SHELF -->
+      <div class="shelf-section">
+        <div class="shelf-back"></div>
+        <div class="books">
+
+          <div class="book book-breakfast">
+            <div class="book-spine">
+              <span class="book-label">Breakfast</span>
+            </div>
+            <div class="book-emoji">🍳</div>
+          </div>
+
+          <div class="book book-lunch">
+            <div class="book-spine">
+              <span class="book-label">Lunch</span>
+            </div>
+            <div class="book-emoji">🥗</div>
+          </div>
+
+          <div class="book book-dinner">
+            <div class="book-spine">
+              <span class="book-label">Dinner</span>
+            </div>
+            <div class="book-emoji">🍽️</div>
+          </div>
+
+          <div class="book book-baking">
+            <div class="book-spine">
+              <span class="book-label">Bakverk</span>
+            </div>
+            <div class="book-emoji">🎂</div>
+          </div>
+
+          <div class="book book-drinks">
+            <div class="book-spine">
+              <span class="book-label">Drycker</span>
+            </div>
+            <div class="book-emoji">🔒</div>
+          </div>
+
+        </div>
+        <div class="shelf-board"></div>
+      </div>
+
+      <!-- COUNTER -->
+      <div class="counter">
+        <div class="counter-items">
+          <div class="tool">
+            <div class="tool-emoji">🍳</div>
+            <div class="tool-label">Cast Iron</div>
+          </div>
+          <div class="tool">
+            <div class="tool-emoji">🤖</div>
+            <div class="tool-label">KitchenAid</div>
+          </div>
+          <div class="tool" style="margin-left:auto">
+            <div class="tool-emoji">🫙</div>
+          </div>
+        </div>
+
+        <div class="counter-top"></div>
+        <div class="counter-body"></div>
+        <div class="cutting-board">🧅 🌿</div>
+        <div class="mortar">🫙</div>
+        <div class="kettle">🫖</div>
+      </div>
+
+      <!-- BOTTOM PANEL -->
+      <div class="bottom-panel">
+        <button class="menu-btn">
+          <span>📋</span> Visa min meny
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SIDE NOTES -->
+<div class="side-notes">
+  <h3>Chefs Quest — Köket</h3>
+
+  <div class="note">
+    <strong>📚 Kokböcker på hyllan</strong>
+    En bok per kategori. Tjockare = fler recept lagade.
+    <div class="callout">Låst bok har grå, tom rygg. Öppnad bok visar titel och kategoriemoji.</div>
+  </div>
+
+  <div class="note">
+    <strong>🍳 Redskap på bänken</strong>
+    Dyker upp baserat på vad du lagar — trofeer, inte badges.
+    <div class="callout">Gjutjärnspanna: pasta-mästare. KitchenAid: bagare. Pasta-maskin: etc.</div>
+  </div>
+
+  <div class="note">
+    <strong>☀️ Ljussättning efter tid</strong>
+    Morgon = varmt gyllene. Kväll = varm lampa, mörkare vägg.
+    <div class="callout">Solens position i fönstret ändras. Vintertid: snö utanför.</div>
+  </div>
+
+  <div class="note">
+    <strong>✦ Restaurangnamn</strong>
+    Användaren namnger sitt kök vid onboarding.
+    <div class="callout">"Ellens Bistro", "Café Lundberg" — visas alltid i toppen.</div>
+  </div>
+
+  <div class="note">
+    <strong>📋 Visa min meny</strong>
+    Öppnar restaurangkortet med alla lagade recept + egna bilder.
+  </div>
+</div>
+
+</body>
+</html>

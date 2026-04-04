@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chefs Quest — Worlds</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1A0F07; font-family: 'Georgia', serif; color: #F5E6C8; min-height: 100vh; padding: 24px 16px; }
+
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #C4914A; margin-bottom: 6px; }
+  .header h1 { font-size: 28px; font-weight: bold; color: #F5E6C8; }
+  .xp-bar-wrap { margin: 10px auto 0; max-width: 280px; }
+  .xp-label { display: flex; justify-content: space-between; font-size: 11px; color: #8B7355; margin-bottom: 4px; }
+  .xp-bar { background: #2C1A0E; border-radius: 99px; height: 8px; overflow: hidden; }
+  .xp-fill { background: linear-gradient(90deg, #C4914A, #F5C842); width: 34%; height: 100%; border-radius: 99px; animation: grow 1.2s ease-out; }
+  @keyframes grow { from { width: 0 } to { width: 34% } }
+
+  .worlds { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 420px; margin: 0 auto; }
+
+  .world-card {
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .world-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.5); }
+  .world-card:active { transform: scale(0.97); }
+
+  .world-art {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    position: relative;
+  }
+
+  .world-art .sparkles {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 14px;
+    animation: float 2.5s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+  .world-body { padding: 12px 14px 14px; }
+  .world-name { font-size: 15px; font-weight: bold; margin-bottom: 2px; }
+  .world-sub { font-size: 11px; opacity: 0.7; margin-bottom: 8px; }
+  .world-progress { background: rgba(255,255,255,0.15); border-radius: 99px; height: 5px; overflow:hidden; }
+  .world-fill { height: 100%; border-radius: 99px; }
+
+  /* Breakfast - golden morning */
+  .world-breakfast .world-art { background: linear-gradient(135deg, #F5C842, #E8A020); }
+  .world-breakfast .world-body { background: #3D2608; }
+  .world-breakfast .world-fill { background: #F5C842; width: 60%; }
+
+  /* Lunch - fresh green */
+  .world-lunch .world-art { background: linear-gradient(135deg, #5C8A3C, #3D6B28); }
+  .world-lunch .world-body { background: #1E2E14; }
+  .world-lunch .world-fill { background: #7BC96F; width: 30%; }
+
+  /* Dinner - deep rich red */
+  .world-dinner .world-art { background: linear-gradient(135deg, #8B2E1A, #C4501A); }
+  .world-dinner .world-body { background: #2C1209; }
+  .world-dinner .world-fill { background: #E07050; width: 80%; }
+
+  /* Snacks - purple fun */
+  .world-snacks .world-art { background: linear-gradient(135deg, #5C3D8A, #8B5EC4); }
+  .world-snacks .world-body { background: #1E1428; }
+  .world-snacks .world-fill { background: #A07BE0; width: 10%; }
+
+  .locked-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    backdrop-filter: blur(2px);
+    border-radius: 16px;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border-radius: 99px;
+    font-size: 10px;
+    padding: 2px 8px;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    max-width: 420px;
+    margin: 28px auto 0;
+    background: #2C1A0E;
+    border-radius: 20px;
+    padding: 12px 0;
+  }
+  .nav-item { text-align: center; font-size: 10px; color: #8B7355; cursor: pointer; }
+  .nav-item .icon { font-size: 22px; display: block; margin-bottom: 3px; }
+  .nav-item.active { color: #C4914A; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Chefs Quest</div>
+  <h1>Choose Your World</h1>
+  <div class="xp-bar-wrap">
+    <div class="xp-label"><span>⭐ 340 XP</span><span>Level 4</span></div>
+    <div class="xp-bar"><div class="xp-fill"></div></div>
+    <div style="font-size:10px;color:#8B7355;text-align:right;margin-top:3px;">160 XP to next level</div>
+  </div>
+</div>
+
+<div class="worlds">
+
+  <div class="world-card world-breakfast">
+    <div class="world-art">🍳<span class="sparkles">✨</span></div>
+    <div class="world-body">
+      <div class="badge">4/6 recipes</div>
+      <div class="world-name">Breakfast</div>
+      <div class="world-sub">Rise & shine</div>
+      <div class="world-progress"><div class="world-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="world-card world-lunch">
+    <div class="world-art">🥗<span class="sparkles">🌿</span></div>
+    <div class="world-body">
+      <div class="badge">2/8 recipes</div>
+      <div class="world-name">Lunch</div>
+      <div class="world-sub">Midday fuel</div>
+      <div class="world-progress"><div class="world-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="world-card world-dinner">
+    <div class="world-art">🍽️<span class="sparkles">🔥</span></div>
+    <div class="world-body">
+      <div class="badge">8/10 recipes</div>
+      <div class="world-name">Dinner</div>
+      <div class="world-sub">The main event</div>
+      <div class="world-progress"><div class="world-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="world-card world-snacks" style="position:relative;">
+    <div class="world-art">🍿</div>
+    <div class="world-body">
+      <div class="badge">0/5 recipes</div>
+      <div class="world-name">Snacks</div>
+      <div class="world-sub">Unlock at 500 XP</div>
+      <div class="world-progress"><div class="world-fill"></div></div>
+    </div>
+    <div class="locked-overlay">🔒</div>
+  </div>
+
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active"><span class="icon">🗺️</span>Worlds</div>
+  <div class="nav-item"><span class="icon">📖</span>Recipes</div>
+  <div class="nav-item"><span class="icon">👤</span>Profile</div>
+</div>
+
+</body>
+</html>

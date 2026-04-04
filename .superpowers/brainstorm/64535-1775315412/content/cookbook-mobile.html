@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chefs Quest — Cookbook Style</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2218;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, sans-serif;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #000;
+    border-radius: 54px;
+    box-shadow: 0 0 0 2px #333, 0 0 0 6px #1a1a1a, 0 30px 80px rgba(0,0,0,0.7);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .notch {
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 150px; height: 30px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  .status-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 24px 6px;
+    z-index: 99;
+    color: #2C1A0E;
+    font-size: 12px; font-weight: 600;
+  }
+
+  .screen {
+    position: absolute; inset: 0;
+    border-radius: 54px;
+    overflow: hidden;
+    background: #F9F3E8;
+  }
+
+  /* Top header — the "book cover" strip */
+  .book-header {
+    background: #2C1A0E;
+    padding: 44px 24px 16px;
+    position: relative;
+  }
+
+  .book-header-inner {
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+
+  .book-title {
+    font-family: 'Georgia', serif;
+    font-size: 22px;
+    color: #F5E6C8;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  .book-subtitle {
+    font-size: 11px;
+    color: #C4914A;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .level-badge {
+    background: rgba(196,145,74,0.2);
+    border: 1px solid rgba(196,145,74,0.5);
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-align: center;
+  }
+  .level-badge .lvl { font-size: 10px; color: #C4914A; letter-spacing: 1px; text-transform: uppercase; }
+  .level-badge .num { font-size: 20px; font-weight: bold; color: #F5C842; line-height: 1; }
+
+  /* XP bar */
+  .xp-wrap {
+    margin-top: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .xp-label { font-size: 10px; color: rgba(245,230,200,0.5); white-space: nowrap; }
+  .xp-track {
+    flex: 1; height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #C4914A, #F5C842);
+    border-radius: 99px;
+    width: 34%;
+    animation: xpgrow 1.5s ease-out;
+  }
+  @keyframes xpgrow { from{width:0} to{width:34%} }
+
+  /* Chapter divider */
+  .chapter {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px 8px;
+  }
+  .chapter-line { flex: 1; height: 1px; background: rgba(44,26,14,0.12); }
+  .chapter-title {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: #8B6340;
+  }
+
+  /* Recipe list */
+  .recipes { padding: 0 16px; overflow-y: auto; height: calc(812px - 44px - 110px - 70px); }
+
+  /* Recipe row — like a book page entry */
+  .recipe-row {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 4px rgba(44,26,14,0.08), 0 0 0 1px rgba(44,26,14,0.04);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+
+  /* "Page" left decoration */
+  .recipe-row::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--accent, #C4914A);
+    border-radius: 12px 0 0 12px;
+  }
+
+  .recipe-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    background: var(--icon-bg, #FEF3E2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .recipe-info { flex: 1; min-width: 0; }
+  .recipe-name {
+    font-family: 'Georgia', serif;
+    font-size: 15px; font-weight: bold;
+    color: #2C1A0E;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .recipe-meta {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .diff-badge {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 99px;
+  }
+  .diff-easy { background: #DCFCE7; color: #166534; }
+  .diff-medium { background: #FEF9C3; color: #854D0E; }
+  .diff-hard { background: #FEE2E2; color: #991B1B; }
+
+  .xp-tag { font-size: 10px; color: #C4914A; font-weight: 600; }
+
+  .recipe-arrow { color: #C4B49A; font-size: 14px; flex-shrink: 0; }
+
+  /* LOCKED recipe */
+  .recipe-row.locked {
+    background: #F5F0E8;
+  }
+  .recipe-row.locked::before { background: #C8B8A0; }
+  .recipe-row.locked .recipe-icon { filter: grayscale(1); opacity: 0.4; }
+  .recipe-row.locked .recipe-name { color: #9C8C7C; }
+  .recipe-row.locked .xp-tag { color: #9C8C7C; }
+
+  .locked-veil {
+    position: absolute; inset: 0;
+    backdrop-filter: blur(3px);
+    background: rgba(245,240,232,0.55);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+  }
+  .locked-chip {
+    background: rgba(44,26,14,0.08);
+    border: 1px solid rgba(44,26,14,0.12);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 11px;
+    color: #7C6A56;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: #fff;
+    border-top: 1px solid rgba(44,26,14,0.08);
+    display: flex; justify-content: space-around; align-items: center;
+    padding-bottom: 10px;
+  }
+  .nav-btn { text-align: center; font-size: 10px; color: #C0AE98; }
+  .nav-btn span { font-size: 20px; display: block; margin-bottom: 2px; }
+  .nav-btn.on { color: #2C1A0E; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status-bar" style="color:#F5E6C8;">
+    <span>9:41</span><span>●●●</span>
+  </div>
+
+  <div class="screen">
+
+    <!-- Book-style header -->
+    <div class="book-header">
+      <div class="book-header-inner">
+        <div>
+          <div class="book-subtitle">Chefs Quest</div>
+          <div class="book-title">Recipe Library</div>
+        </div>
+        <div class="level-badge">
+          <div class="lvl">Level</div>
+          <div class="num">4</div>
+        </div>
+      </div>
+      <div class="xp-wrap">
+        <div class="xp-label">340 / 500 XP</div>
+        <div class="xp-track"><div class="xp-fill"></div></div>
+        <div class="xp-label">Lv 5</div>
+      </div>
+    </div>
+
+    <!-- Recipe list -->
+    <div class="recipes">
+
+      <div class="chapter">
+        <div class="chapter-line"></div>
+        <div class="chapter-title">Dinner</div>
+        <div class="chapter-line"></div>
+      </div>
+
+      <!-- Unlocked -->
+      <div class="recipe-row" style="--accent:#C4914A;--icon-bg:#FEF3E2;">
+        <div class="recipe-icon">🍝</div>
+        <div class="recipe-info">
+          <div class="recipe-name">Pasta Carbonara</div>
+          <div class="recipe-meta">
+            <span class="diff-badge diff-easy">Easy</span>
+            <span class="xp-tag">+100 XP</span>
+          </div>
+        </div>
+        <div class="recipe-arrow">›</div>
+      </div>
+
+      <div class="recipe-row" style="--accent:#E64A19;--icon-bg:#FEF0EA;">
+        <div class="recipe-icon">🥘</div>
+        <div class="recipe-info">
+          <div class="recipe-name">Chicken Gratin</div>
+          <div class="recipe-meta">
+            <span class="diff-badge diff-hard">Hard</span>
+            <span class="xp-tag">+250 XP</span>
+          </div>
+        </div>
+        <div class="recipe-arrow">›</div>
+      </div>
+
+      <!-- Locked — visible but dimmed -->
+      <div class="recipe-row locked" style="--accent:#C8B8A0;">
+        <div class="recipe-icon">🥩</div>
+        <div class="recipe-info">
+          <div class="recipe-name">Beef Bourguignon</div>
+          <div class="recipe-meta">
+            <span class="diff-badge diff-medium">Medium</span>
+            <span class="xp-tag">500 XP to unlock</span>
+          </div>
+        </div>
+        <div class="locked-veil">
+          <div class="locked-chip">🔒 160 XP away</div>
+        </div>
+      </div>
+
+      <div class="chapter">
+        <div class="chapter-line"></div>
+        <div class="chapter-title">Breakfast</div>
+        <div class="chapter-line"></div>
+      </div>
+
+      <div class="recipe-row" style="--accent:#F5C842;--icon-bg:#FFFBEA;">
+        <div class="recipe-icon">🍳</div>
+        <div class="recipe-info">
+          <div class="recipe-name">Eggs Benedict</div>
+          <div class="recipe-meta">
+            <span class="diff-badge diff-medium">Medium</span>
+            <span class="xp-tag">+150 XP</span>
+          </div>
+        </div>
+        <div class="recipe-arrow">›</div>
+      </div>
+
+      <!-- Locked -->
+      <div class="recipe-row locked">
+        <div class="recipe-icon">🥞</div>
+        <div class="recipe-info">
+          <div class="recipe-name">Fluffy Pancakes</div>
+          <div class="recipe-meta">
+            <span class="diff-badge diff-easy">Easy</span>
+            <span class="xp-tag">500 XP to unlock</span>
+          </div>
+        </div>
+        <div class="locked-veil">
+          <div class="locked-chip">🔒 160 XP away</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-btn"><span>🌌</span>Map</div>
+      <div class="nav-btn on"><span>📖</span>Recipes</div>
+      <div class="nav-btn"><span>👤</span>Profile</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
