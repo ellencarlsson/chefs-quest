@@ -49,6 +49,7 @@ class Recipe {
   final int xpReward;
   final bool isLocked;
   final String? category;
+  final String? imageUrl;
   final List<RecipeIngredient> ingredients;
   final List<RecipeStep> steps;
 
@@ -60,6 +61,7 @@ class Recipe {
     required this.xpReward,
     required this.isLocked,
     this.category,
+    this.imageUrl,
     required this.ingredients,
     required this.steps,
   });
@@ -73,6 +75,7 @@ class Recipe {
       xpReward: json['xp_reward'] as int,
       isLocked: json['is_locked'] as bool,
       category: json['category'] as String?,
+      imageUrl: json['image_url'] as String?,
       ingredients: (json['ingredients'] as List)
           .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
           .toList(),

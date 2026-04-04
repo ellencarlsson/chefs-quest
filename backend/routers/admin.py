@@ -56,6 +56,19 @@ def fetch_tiktok_description(url: str) -> str:
     return description
 
 
+def fetch_tiktok_thumbnail(url: str) -> str | None:
+    result = subprocess.run(
+        ["yt-dlp", "--skip-download", "--print", "thumbnail", url],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        return None
+    thumbnail = result.stdout.strip()
+    return thumbnail if thumbnail else None
+
+
 def extract_recipe_with_groq(description: str) -> dict:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
@@ -80,4 +93,6 @@ def extract_recipe_with_groq(description: str) -> dict:
 @router.post("/import-tiktok")
 def import_tiktok(body: ImportRequest) -> dict:
     description = fetch_tiktok_description(body.url)
-    return extract_recipe_with_groq(description)
+    recipe = extract_recipe_with_groq(description)
+    recipe["thumbnail_url"] = fetch_tiktok_thumbnail(body.url)
+    return recipe

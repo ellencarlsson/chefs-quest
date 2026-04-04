@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _load() async {
+    if (mounted) setState(() => _loading = true);
     try {
       final recipes = await RecipeService.fetchRecipes();
       if (mounted) setState(() { _recipes = recipes; _loading = false; });
@@ -56,17 +57,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
-              slivers: [
-                _buildHeader(),
-                SliverToBoxAdapter(child: _buildCategoryGrid()),
-                if (_recentUnlocked.isNotEmpty)
-                  SliverToBoxAdapter(child: _buildRecentSection()),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
-            ),
+      body: RefreshIndicator(
+        onRefresh: _load,
+        color: AppColors.primary,
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : CustomScrollView(
+                slivers: [
+                  _buildHeader(),
+                  SliverToBoxAdapter(child: _buildCategoryGrid()),
+                  if (_recentUnlocked.isNotEmpty)
+                    SliverToBoxAdapter(child: _buildRecentSection()),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              ),
+      ),
     );
   }
 
@@ -209,11 +214,14 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -243,6 +251,7 @@ class _CategoryCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
