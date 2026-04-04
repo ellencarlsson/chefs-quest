@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/recipe.dart';
 
 // Use 10.0.2.2 for Android emulator, localhost for iOS simulator / web
-const String _baseUrl = 'http://10.0.2.2:8000';
+const String _baseUrl = 'http://192.168.1.31:8000';
 
 class RecipeService {
   static Future<List<Recipe>> fetchRecipes() async {
