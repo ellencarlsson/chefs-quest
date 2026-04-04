@@ -1,33 +1,71 @@
 """Admin utility endpoints."""
 
-import json
-import os
+import re
 import subprocess
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import anthropic
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-EXTRACT_PROMPT = """\
-Given the following TikTok video description, extract recipe data.
+INGREDIENT_HEADER = re.compile(r'(?i)^(ingredients?|ingr[eé]dienser?|vad du beh[öo]ver):?\s*$')
+STEP_HEADER = re.compile(r'(?i)^(steps?|instructions?|directions?|how to|method|g[öo]r s[åa] h[äe]r|tillvägag[åa]ngss[äe]tt|s[åa] g[öo]r du):?\s*$')
+STEP_LINE = re.compile(r'^(\d+)[.)]\s*(.+)')
+AMOUNT_UNIT = re.compile(
+    r'^([\d½¼¾⅓⅔\s/.,]+)\s*(g|kg|ml|l|dl|cl|tbsp|tsp|msk|tsk|cups?|oz|lb|st|stycken|pieces?|handfull?)\.?\s+(.+)',
+    re.IGNORECASE,
+)
+AMOUNT_ONLY = re.compile(r'^([\d½¼¾⅓⅔\s/.,]+)\s+(.+)')
 
-Return ONLY a JSON object with this structure (no markdown, no explanation):
-{{
-  "title": "Recipe name",
-  "ingredients": [
-    {{"name": "ingredient name", "amount": "quantity", "unit": "unit"}}
-  ],
-  "steps": [
-    {{"step_number": 1, "instruction": "step description"}}
-  ]
-}}
 
-If a field cannot be determined, use null for amount/unit. Steps must be ordered.
+def parse_ingredient(line: str) -> dict | None:
+    line = line.lstrip('-•*').strip()
+    if not line:
+        return None
+    m = AMOUNT_UNIT.match(line)
+    if m:
+        return {"name": m.group(3).strip(), "amount": m.group(1).strip(), "unit": m.group(2).strip()}
+    m = AMOUNT_ONLY.match(line)
+    if m:
+        return {"name": m.group(2).strip(), "amount": m.group(1).strip(), "unit": None}
+    return {"name": line, "amount": None, "unit": None}
 
-Description:
-{description}
-"""
+
+def parse_recipe(description: str) -> dict:
+    lines = [l.strip() for l in description.splitlines() if l.strip()]
+    if not lines:
+        return {"title": "", "ingredients": [], "steps": []}
+
+    title = lines[0]
+    ingredients: list[dict] = []
+    steps: list[dict] = []
+    mode = None
+
+    for line in lines[1:]:
+        if INGREDIENT_HEADER.match(line):
+            mode = "ingredients"
+            continue
+        if STEP_HEADER.match(line):
+            mode = "steps"
+            continue
+
+        if mode == "ingredients":
+            ing = parse_ingredient(line)
+            if ing:
+                ingredients.append(ing)
+        elif mode == "steps":
+            m = STEP_LINE.match(line)
+            if m:
+                steps.append({"step_number": int(m.group(1)), "instruction": m.group(2).strip()})
+            else:
+                steps.append({"step_number": len(steps) + 1, "instruction": line})
+        else:
+            # No header found yet — detect numbered steps inline
+            m = STEP_LINE.match(line)
+            if m:
+                mode = "steps"
+                steps.append({"step_number": int(m.group(1)), "instruction": m.group(2).strip()})
+
+    return {"title": title, "ingredients": ingredients, "steps": steps}
 
 
 class ImportRequest(BaseModel):
@@ -49,25 +87,7 @@ def fetch_tiktok_description(url: str) -> str:
     return description
 
 
-def extract_recipe_from_description(description: str) -> dict:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured.")
-
-    client = anthropic.Anthropic(api_key=api_key)
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": EXTRACT_PROMPT.format(description=description)}],
-    )
-    raw = message.content[0].text.strip()
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Claude returned invalid JSON.")
-
-
 @router.post("/import-tiktok")
 def import_tiktok(body: ImportRequest) -> dict:
     description = fetch_tiktok_description(body.url)
-    return extract_recipe_from_description(description)
+    return parse_recipe(description)
