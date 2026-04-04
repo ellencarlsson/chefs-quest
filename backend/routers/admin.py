@@ -1,71 +1,35 @@
 """Admin utility endpoints."""
 
-import re
+import json
+import os
 import subprocess
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from groq import Groq
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-INGREDIENT_HEADER = re.compile(r'(?i)^(ingredients?|ingr[eé]dienser?|vad du beh[öo]ver):?\s*$')
-STEP_HEADER = re.compile(r'(?i)^(steps?|instructions?|directions?|how to|method|g[öo]r s[åa] h[äe]r|tillvägag[åa]ngss[äe]tt|s[åa] g[öo]r du):?\s*$')
-STEP_LINE = re.compile(r'^(\d+)[.)]\s*(.+)')
-AMOUNT_UNIT = re.compile(
-    r'^([\d½¼¾⅓⅔\s/.,]+)\s*(g|kg|ml|l|dl|cl|tbsp|tsp|msk|tsk|cups?|oz|lb|st|stycken|pieces?|handfull?)\.?\s+(.+)',
-    re.IGNORECASE,
-)
-AMOUNT_ONLY = re.compile(r'^([\d½¼¾⅓⅔\s/.,]+)\s+(.+)')
+EXTRACT_PROMPT = """\
+Given the following TikTok video description, extract recipe data.
 
+Return ONLY a JSON object with this exact structure (no markdown, no explanation):
+{
+  "title": "Recipe name",
+  "ingredients": [
+    {"name": "ingredient name", "amount": "quantity or null", "unit": "unit or null"}
+  ],
+  "steps": [
+    {"step_number": 1, "instruction": "step description"}
+  ]
+}
 
-def parse_ingredient(line: str) -> dict | None:
-    line = line.lstrip('-•*').strip()
-    if not line:
-        return None
-    m = AMOUNT_UNIT.match(line)
-    if m:
-        return {"name": m.group(3).strip(), "amount": m.group(1).strip(), "unit": m.group(2).strip()}
-    m = AMOUNT_ONLY.match(line)
-    if m:
-        return {"name": m.group(2).strip(), "amount": m.group(1).strip(), "unit": None}
-    return {"name": line, "amount": None, "unit": None}
+Rules:
+- Use null (not empty string) when amount or unit is unknown
+- Steps must be in order
+- If multiple sub-recipes exist, combine all ingredients and steps into one list
 
-
-def parse_recipe(description: str) -> dict:
-    lines = [l.strip() for l in description.splitlines() if l.strip()]
-    if not lines:
-        return {"title": "", "ingredients": [], "steps": []}
-
-    title = lines[0]
-    ingredients: list[dict] = []
-    steps: list[dict] = []
-    mode = None
-
-    for line in lines[1:]:
-        if INGREDIENT_HEADER.match(line):
-            mode = "ingredients"
-            continue
-        if STEP_HEADER.match(line):
-            mode = "steps"
-            continue
-
-        if mode == "ingredients":
-            ing = parse_ingredient(line)
-            if ing:
-                ingredients.append(ing)
-        elif mode == "steps":
-            m = STEP_LINE.match(line)
-            if m:
-                steps.append({"step_number": int(m.group(1)), "instruction": m.group(2).strip()})
-            else:
-                steps.append({"step_number": len(steps) + 1, "instruction": line})
-        else:
-            # No header found yet — detect numbered steps inline
-            m = STEP_LINE.match(line)
-            if m:
-                mode = "steps"
-                steps.append({"step_number": int(m.group(1)), "instruction": m.group(2).strip()})
-
-    return {"title": title, "ingredients": ingredients, "steps": steps}
+Description:
+"""
 
 
 class ImportRequest(BaseModel):
@@ -87,7 +51,28 @@ def fetch_tiktok_description(url: str) -> str:
     return description
 
 
+def extract_recipe_with_groq(description: str) -> dict:
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured.")
+
+    client = Groq(api_key=api_key)
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": EXTRACT_PROMPT + description}],
+        temperature=0,
+        max_tokens=1024,
+    )
+    raw = response.choices[0].message.content.strip()
+    # Strip markdown code fences if model wraps response
+    raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Could not parse recipe from description.")
+
+
 @router.post("/import-tiktok")
 def import_tiktok(body: ImportRequest) -> dict:
     description = fetch_tiktok_description(body.url)
-    return parse_recipe(description)
+    return extract_recipe_with_groq(description)
