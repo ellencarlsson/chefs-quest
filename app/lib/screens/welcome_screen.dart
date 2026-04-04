@@ -63,6 +63,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
   }
 
+  void _showAppleComingSoon() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ComingSoonSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,13 +106,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                     const Spacer(flex: 3),
                     _PrimaryButton(
-                      label: 'Logga in med Google',
-                      onTap: _signingIn ? null : _signInWithGoogle,
-                      loading: _signingIn,
+                      label: 'Logga in med Apple',
+                      onTap: _showAppleComingSoon,
+                      icon: Icons.apple,
                     ),
                     const SizedBox(height: 12),
                     _SecondaryButton(
-                      label: 'Skapa konto med Google',
+                      label: 'Logga in med Google',
                       onTap: _signingIn ? null : _signInWithGoogle,
                     ),
                     const SizedBox(height: 28),
@@ -178,8 +186,9 @@ class _PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final bool loading;
+  final IconData? icon;
 
-  const _PrimaryButton({required this.label, required this.onTap, this.loading = false});
+  const _PrimaryButton({required this.label, required this.onTap, this.loading = false, this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -188,8 +197,8 @@ class _PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.gold,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
@@ -197,9 +206,18 @@ class _PrimaryButton extends StatelessWidget {
         child: loading
             ? const SizedBox(
                 height: 20, width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
               )
-            : Text(label, style: AppTextStyles.label(16, color: Colors.white)),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 20),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(label, style: AppTextStyles.label(16, color: Colors.black)),
+                ],
+              ),
       ),
     );
   }
@@ -229,3 +247,54 @@ class _SecondaryButton extends StatelessWidget {
   }
 }
 
+class _ComingSoonSheet extends StatelessWidget {
+  const _ComingSoonSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.muted.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text('🍎', style: TextStyle(fontSize: 40)),
+          const SizedBox(height: 12),
+          Text('Apple Sign-In kommer snart', style: AppTextStyles.headingDark(22)),
+          const SizedBox(height: 8),
+          Text(
+            'Logga in med Google eller fortsätt som gäst tills vidare.',
+            style: AppTextStyles.body(14, color: AppColors.muted),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: Text('Okej', style: AppTextStyles.label(15, color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
