@@ -1,6 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../app_theme.dart';
+
+final _googleSignIn = GoogleSignIn(
+  clientId: '746454650697-6f2vv7n7teb3j15a8o0plt26vrn5rh7a.apps.googleusercontent.com',
+  scopes: ['email', 'profile'],
+);
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -14,6 +20,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   late final AnimationController _ctrl;
   late final Animation<double> _fadeIn;
   late final Animation<Offset> _slideUp;
+  bool _signingIn = false;
 
   @override
   void initState() {
@@ -25,6 +32,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     _fadeIn = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
     _slideUp = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
         .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _googleSignIn.isSignedIn(); // pre-warm SDK
   }
 
   @override
@@ -37,12 +45,22 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     Navigator.of(context).pushReplacementNamed('/home');
   }
 
-  void _showComingSoon(BuildContext context, String action) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _ComingSoonSheet(action: action),
-    );
+  Future<void> _signInWithGoogle() async {
+    setState(() => _signingIn = true);
+    try {
+      final account = await _googleSignIn.signIn();
+      if (account != null && mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Inloggning misslyckades: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _signingIn = false);
+    }
   }
 
   @override
@@ -80,13 +98,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                     const Spacer(flex: 3),
                     _PrimaryButton(
-                      label: 'Skapa konto',
-                      onTap: () => _showComingSoon(context, 'Skapa konto'),
+                      label: 'Logga in med Google',
+                      onTap: _signingIn ? null : _signInWithGoogle,
+                      loading: _signingIn,
                     ),
                     const SizedBox(height: 12),
                     _SecondaryButton(
-                      label: 'Logga in',
-                      onTap: () => _showComingSoon(context, 'Logga in'),
+                      label: 'Skapa konto med Google',
+                      onTap: _signingIn ? null : _signInWithGoogle,
                     ),
                     const SizedBox(height: 28),
                     GestureDetector(
@@ -157,9 +176,10 @@ class _LogoState extends State<_Logo> with SingleTickerProviderStateMixin {
 
 class _PrimaryButton extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool loading;
 
-  const _PrimaryButton({required this.label, required this.onTap});
+  const _PrimaryButton({required this.label, required this.onTap, this.loading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +194,12 @@ class _PrimaryButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
         ),
-        child: Text(label, style: AppTextStyles.label(16, color: Colors.white)),
+        child: loading
+            ? const SizedBox(
+                height: 20, width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : Text(label, style: AppTextStyles.label(16, color: Colors.white)),
       ),
     );
   }
@@ -182,7 +207,7 @@ class _PrimaryButton extends StatelessWidget {
 
 class _SecondaryButton extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _SecondaryButton({required this.label, required this.onTap});
 
@@ -204,55 +229,3 @@ class _SecondaryButton extends StatelessWidget {
   }
 }
 
-class _ComingSoonSheet extends StatelessWidget {
-  final String action;
-  const _ComingSoonSheet({required this.action});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40, height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.muted.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text('🚧', style: TextStyle(fontSize: 40)),
-          const SizedBox(height: 12),
-          Text('$action kommer snart', style: AppTextStyles.headingDark(22)),
-          const SizedBox(height: 8),
-          Text(
-            'Konton och inloggning är på väg. Fortsätt som gäst tills vidare.',
-            style: AppTextStyles.body(14, color: AppColors.muted),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
-              child: Text('Okej', style: AppTextStyles.label(15, color: Colors.white)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
