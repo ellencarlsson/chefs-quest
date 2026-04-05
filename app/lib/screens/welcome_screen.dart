@@ -112,7 +112,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     _PrimaryButton(
                       label: 'Logga in med Apple',
                       onTap: _showAppleComingSoon,
-                      icon: Icons.apple,
+                      icon: null,
                     ),
                     const SizedBox(height: 12),
                     _SecondaryButton(

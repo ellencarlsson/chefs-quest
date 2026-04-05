@@ -99,7 +99,7 @@ class _IngredientRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          const Icon(Icons.circle, size: 6),
+          Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
           const SizedBox(width: 10),
           Expanded(child: Text(ingredient.name)),
           if (qty.isNotEmpty)

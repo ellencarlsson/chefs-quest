@@ -1,30 +1,22 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../app_theme.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
+import '../widgets/level_xp_widget.dart';
 import 'category_screen.dart';
 
+final _googleSignIn = GoogleSignIn(
+  clientId: '746454650697-6f2vv7n7teb3j15a8o0plt26vrn5rh7a.apps.googleusercontent.com',
+  scopes: ['email', 'profile'],
+);
+
 const _kCategories = [
-  _Category(
-    'Breakfast', 'breakfast',
-    'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=80',
-    [Color(0xFFFF9A3C), Color(0xFFFF6B35)],
-  ),
-  _Category(
-    'Lunch', 'lunch',
-    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
-    [Color(0xFF56AB2F), Color(0xFF2E7D32)],
-  ),
-  _Category(
-    'Dinner', 'dinner',
-    'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
-    [Color(0xFF3D6B4F), Color(0xFF1A3024)],
-  ),
-  _Category(
-    'Snack', 'snack',
-    'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=600&q=80',
-    [Color(0xFFC8933A), Color(0xFF8B5E1A)],
-  ),
+  _Category('Breakfast', 'breakfast', 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=600&q=80', [Color(0xFFFF9A3C), Color(0xFFFF6B35)]),
+  _Category('Lunch', 'lunch', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80', [Color(0xFF56AB2F), Color(0xFF2E7D32)]),
+  _Category('Dinner', 'dinner', 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80', [Color(0xFF3D6B4F), Color(0xFF1A3024)]),
+  _Category('Snack', 'snack', 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=600&q=80', [Color(0xFFC8933A), Color(0xFF8B5E1A)]),
 ];
 
 class HomeScreen extends StatefulWidget {
@@ -37,6 +29,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Recipe> _recipes = [];
   bool _loading = true;
+  final _rng = Random();
 
   @override
   void initState() {
@@ -54,12 +47,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String get _firstName {
+    final name = _googleSignIn.currentUser?.displayName;
+    if (name == null || name.isEmpty) return '';
+    return name.split(' ').first;
+  }
+
+  String get _greeting {
+    final h = DateTime.now().hour;
+    final name = _firstName.isNotEmpty ? ', $_firstName' : '';
+    if (h < 10) return 'Good morning$name!';
+    if (h < 14) return "Let's cook$name!";
+    if (h < 18) return 'Keep cooking$name!';
+    return 'Good evening$name!';
+  }
+
   int get _totalXp => _recipes.where((r) => !r.isLocked).fold(0, (s, r) => s + r.xpReward);
-  int get _level => (_totalXp / 200).floor() + 1;
-  double get _levelProgress => (_totalXp % 200) / 200;
+  int get _level => (_totalXp / 500).floor() + 1;
+  int get _currentLevelXp => _totalXp % 500;
+  static const int _xpPerLevel = 500;
 
   List<Recipe> _forCategory(String cat) =>
       _recipes.where((r) => r.category == cat).toList();
+
+  Recipe? _randomRecipe(List<Recipe> recipes) {
+    if (recipes.isEmpty) return null;
+    return recipes[_rng.nextInt(recipes.length)];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           _buildHeader(),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildCategories(),
-          ),
+          if (_loading)
+            const Expanded(child: Center(child: CircularProgressIndicator()))
+          else
+            Expanded(child: _buildCategories()),
         ],
       ),
     );
@@ -92,13 +105,20 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Chefs Quest', style: AppTextStyles.heading(22)),
-              _LevelXpWidget(
-                xp: _totalXp,
+              Expanded(
+                child: Text(
+                  _greeting,
+                  style: AppTextStyles.heading(20),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 12),
+              LevelXpWidget(
                 level: _level,
-                progress: _levelProgress,
+                currentXp: _currentLevelXp,
+                maxXp: _xpPerLevel,
               ),
             ],
           ),
@@ -116,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, constraints) {
         final itemHeight = (constraints.maxHeight - totalPadding) / _kCategories.length;
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: outerPadding, vertical: outerPadding),
+          padding: const EdgeInsets.all(outerPadding),
           child: Column(
             children: _kCategories.indexed.map((entry) {
               final i = entry.$1;
@@ -128,7 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: double.infinity,
                   child: _CategoryCard(
                     category: cat,
-                    recipeCount: _forCategory(cat.key).length,
+                    featuredRecipe: _randomRecipe(_forCategory(cat.key)),
+                    totalRecipes: _forCategory(cat.key).length,
+                    doneRecipes: _forCategory(cat.key).where((r) => !r.isLocked).length,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -149,104 +171,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _LevelXpWidget extends StatelessWidget {
-  final int xp;
-  final int level;
-  final double progress;
-  const _LevelXpWidget({required this.xp, required this.level, required this.progress});
-
-  static const double _circleSize = 52.0;
-  static const double _barHeight = 22.0;
-  static const double _barWidth = 110.0;
-  static const double _overlap = 14.0;
-
-  int get _currentLevelXp => xp % 200;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: _circleSize,
-      width: _circleSize + _barWidth - _overlap,
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          // XP bar (sits behind circle on the left, extends right)
-          Positioned(
-            left: _circleSize / 2,
-            child: Container(
-              width: _barWidth,
-              height: _barHeight,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
-                border: Border.all(color: AppColors.gold.withOpacity(0.5), width: 1.5),
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return ClipRRect(
-                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
-                    child: Stack(
-                      children: [
-                        Container(width: constraints.maxWidth * progress,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.gold, Color(0xFFE6A020)],
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: Text(
-                            '$_currentLevelXp/200 XP',
-                            style: AppTextStyles.label(10, color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          // Circle (on top, left side)
-          Container(
-            width: _circleSize,
-            height: _circleSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.dark,
-              border: Border.all(color: AppColors.gold, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.gold.withOpacity(0.4),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Level', style: AppTextStyles.body(8, color: AppColors.gold)),
-                Text('$level', style: AppTextStyles.label(16, color: Colors.white)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _CategoryCard extends StatelessWidget {
   final _Category category;
-  final int recipeCount;
+  final Recipe? featuredRecipe;
+  final int totalRecipes;
+  final int doneRecipes;
   final VoidCallback onTap;
 
   const _CategoryCard({
     required this.category,
-    required this.recipeCount,
+    required this.featuredRecipe,
+    required this.totalRecipes,
+    required this.doneRecipes,
     required this.onTap,
   });
+
+  String get _imageUrl {
+    final url = featuredRecipe?.imageUrl;
+    if (url == null || url.isEmpty) return category.imageUrl;
+    if (url.startsWith('http')) return url;
+    return 'http://192.168.1.31:8000$url';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,49 +202,42 @@ class _CategoryCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background image with gradient fallback
             Image.network(
-              category.imageUrl,
+              _imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: category.fallbackColors,
+              errorBuilder: (_, __, ___) => Image.network(
+                category.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: category.fallbackColors,
+                    ),
                   ),
                 ),
               ),
             ),
-            // Dark gradient overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.65),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
                 ),
               ),
             ),
-            // Label
             Positioned(
               bottom: 14,
-              left: 14,
-              right: 14,
+              left: 16,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(category.name, style: AppTextStyles.heading(22)),
                   Text(
-                    category.name,
-                    style: AppTextStyles.heading(20),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$recipeCount recipes',
-                    style: AppTextStyles.body(12, color: Colors.white70),
+                    '$doneRecipes / $totalRecipes recipes done',
+                    style: AppTextStyles.body(13, color: Colors.white70),
                   ),
                 ],
               ),
