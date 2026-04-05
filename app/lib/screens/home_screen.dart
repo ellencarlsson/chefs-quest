@@ -2,8 +2,30 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../models/recipe.dart';
 import '../services/recipe_service.dart';
-import '../widgets/recipe_image.dart';
-import 'recipe_detail_screen.dart';
+import 'category_screen.dart';
+
+const _kCategories = [
+  _Category(
+    'Breakfast', 'breakfast',
+    'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=80',
+    [Color(0xFFFF9A3C), Color(0xFFFF6B35)],
+  ),
+  _Category(
+    'Lunch', 'lunch',
+    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80',
+    [Color(0xFF56AB2F), Color(0xFF2E7D32)],
+  ),
+  _Category(
+    'Dinner', 'dinner',
+    'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
+    [Color(0xFF3D6B4F), Color(0xFF1A3024)],
+  ),
+  _Category(
+    'Snack', 'snack',
+    'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=600&q=80',
+    [Color(0xFFC8933A), Color(0xFF8B5E1A)],
+  ),
+];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,121 +54,181 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  String get _greeting {
-    final h = DateTime.now().hour;
-    if (h < 10) return 'God morgon 👋';
-    if (h < 17) return 'God dag 👋';
-    return 'God kväll 👋';
-  }
+  int get _totalXp => _recipes.where((r) => !r.isLocked).fold(0, (s, r) => s + r.xpReward);
+  int get _level => (_totalXp / 200).floor() + 1;
+  double get _levelProgress => (_totalXp % 200) / 200;
 
-  // Unlocked recipes = "popular" (show first)
-  List<Recipe> get _popular => _recipes.where((r) => !r.isLocked).toList();
-
-  // Locked recipes = "new this week"
-  List<Recipe> get _newThisWeek => _recipes.where((r) => r.isLocked).toList();
+  List<Recipe> _forCategory(String cat) =>
+      _recipes.where((r) => r.category == cat).toList();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: RefreshIndicator(
-        onRefresh: _load,
-        color: AppColors.primary,
-        child: CustomScrollView(
-          slivers: [
-            _buildHeader(),
-            if (_loading)
-              const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else ...[
-              if (_popular.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: _RecipeRow(
-                    title: 'Populära recept',
-                    recipes: _popular,
-                  ),
-                ),
-              if (_newThisWeek.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: _RecipeRow(
-                    title: 'Nytt den här veckan',
-                    recipes: _newThisWeek,
-                  ),
-                ),
-              if (_recipes.isEmpty)
-                const SliverFillRemaining(
-                  child: Center(
-                    child: Text('Inga recept hittades'),
-                  ),
-                ),
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
-            ],
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _buildCategories(),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHeader() {
-    return SliverToBoxAdapter(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.primary, AppColors.dark],
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.dark],
         ),
-        child: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Chefs Quest', style: AppTextStyles.body(12, color: AppColors.muted)),
-                const SizedBox(height: 8),
-                Text(_greeting, style: AppTextStyles.heading(26)),
-                const SizedBox(height: 4),
-                Text(
-                  'Vad ska vi laga idag?',
-                  style: AppTextStyles.body(14, color: AppColors.muted),
-                ),
-              ],
-            ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Chefs Quest', style: AppTextStyles.heading(22)),
+              _LevelXpWidget(
+                xp: _totalXp,
+                level: _level,
+                progress: _levelProgress,
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildCategories() {
+    const padding = 10.0;
+    const outerPadding = 12.0;
+    final totalPadding = outerPadding * 2 + padding * (_kCategories.length - 1);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemHeight = (constraints.maxHeight - totalPadding) / _kCategories.length;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: outerPadding, vertical: outerPadding),
+          child: Column(
+            children: _kCategories.indexed.map((entry) {
+              final i = entry.$1;
+              final cat = entry.$2;
+              return Padding(
+                padding: EdgeInsets.only(bottom: i < _kCategories.length - 1 ? padding : 0),
+                child: SizedBox(
+                  height: itemHeight,
+                  width: double.infinity,
+                  child: _CategoryCard(
+                    category: cat,
+                    recipeCount: _forCategory(cat.key).length,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CategoryScreen(
+                          category: CategoryInfo(cat.name, '', cat.key),
+                          recipes: _forCategory(cat.key),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _RecipeRow extends StatelessWidget {
-  final String title;
-  final List<Recipe> recipes;
+class _LevelXpWidget extends StatelessWidget {
+  final int xp;
+  final int level;
+  final double progress;
+  const _LevelXpWidget({required this.xp, required this.level, required this.progress});
 
-  const _RecipeRow({required this.title, required this.recipes});
+  static const double _circleSize = 52.0;
+  static const double _barHeight = 22.0;
+  static const double _barWidth = 110.0;
+  static const double _overlap = 14.0;
+
+  int get _currentLevelXp => xp % 200;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return SizedBox(
+      height: _circleSize,
+      width: _circleSize + _barWidth - _overlap,
+      child: Stack(
+        alignment: Alignment.centerLeft,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(title, style: AppTextStyles.headingDark(20)),
+          // XP bar (sits behind circle on the left, extends right)
+          Positioned(
+            left: _circleSize / 2,
+            child: Container(
+              width: _barWidth,
+              height: _barHeight,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
+                border: Border.all(color: AppColors.gold.withOpacity(0.5), width: 1.5),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(99)),
+                    child: Stack(
+                      children: [
+                        Container(width: constraints.maxWidth * progress,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.gold, Color(0xFFE6A020)],
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Text(
+                            '$_currentLevelXp/200 XP',
+                            style: AppTextStyles.label(10, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 200,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: recipes.length,
-              itemBuilder: (context, i) => _RecipeCard(recipe: recipes[i]),
+          // Circle (on top, left side)
+          Container(
+            width: _circleSize,
+            height: _circleSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.dark,
+              border: Border.all(color: AppColors.gold, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.gold.withOpacity(0.4),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Level', style: AppTextStyles.body(8, color: AppColors.gold)),
+                Text('$level', style: AppTextStyles.label(16, color: Colors.white)),
+              ],
             ),
           ),
         ],
@@ -155,70 +237,69 @@ class _RecipeRow extends StatelessWidget {
   }
 }
 
-class _RecipeCard extends StatelessWidget {
-  final Recipe recipe;
+class _CategoryCard extends StatelessWidget {
+  final _Category category;
+  final int recipeCount;
+  final VoidCallback onTap;
 
-  const _RecipeCard({required this.recipe});
+  const _CategoryCard({
+    required this.category,
+    required this.recipeCount,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => RecipeDetailScreen(recipe: recipe),
-        ),
-      ),
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.07),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: RecipeImage(
-                imageUrl: recipe.imageUrl,
-                height: 110,
-                fit: BoxFit.cover,
+            // Background image with gradient fallback
+            Image.network(
+              category.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: category.fallbackColors,
+                  ),
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
+            // Dark gradient overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.65),
+                  ],
+                ),
+              ),
+            ),
+            // Label
+            Positioned(
+              bottom: 14,
+              left: 14,
+              right: 14,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    recipe.title,
-                    style: AppTextStyles.label(13),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    category.name,
+                    style: AppTextStyles.heading(20),
                   ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      _DifficultyDot(difficulty: recipe.difficulty),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${recipe.xpReward} XP',
-                        style: AppTextStyles.body(11, color: AppColors.muted),
-                      ),
-                      if (recipe.isLocked) ...[
-                        const Spacer(),
-                        const Icon(Icons.lock, size: 13, color: AppColors.muted),
-                      ],
-                    ],
+                  const SizedBox(height: 2),
+                  Text(
+                    '$recipeCount recipes',
+                    style: AppTextStyles.body(12, color: Colors.white70),
                   ),
                 ],
               ),
@@ -230,24 +311,10 @@ class _RecipeCard extends StatelessWidget {
   }
 }
 
-class _DifficultyDot extends StatelessWidget {
-  final String difficulty;
-  const _DifficultyDot({required this.difficulty});
-
-  Color get _color {
-    switch (difficulty.toLowerCase()) {
-      case 'easy': return Colors.green;
-      case 'medium': return Colors.orange;
-      case 'hard': return Colors.red;
-      default: return AppColors.muted;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 8, height: 8,
-      decoration: BoxDecoration(color: _color, shape: BoxShape.circle),
-    );
-  }
+class _Category {
+  final String name;
+  final String key;
+  final String imageUrl;
+  final List<Color> fallbackColors;
+  const _Category(this.name, this.key, this.imageUrl, this.fallbackColors);
 }

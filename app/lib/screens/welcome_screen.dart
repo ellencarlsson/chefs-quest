@@ -32,7 +32,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     _fadeIn = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
     _slideUp = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
         .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-    _googleSignIn.isSignedIn(); // pre-warm SDK
+    _googleSignIn.isSignedIn().then((signedIn) {
+      if (signedIn && mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    });
   }
 
   @override
